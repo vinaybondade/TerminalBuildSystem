@@ -1,0 +1,28 @@
+#!/bin/sh
+#
+# Start hisky application
+#
+
+
+case "$1" in
+  start)
+	insmod /lib/modules/hsmisc.ko
+	insmod /lib/modules/hsfifo.ko
+	insmod /lib/modules/hsmodem.ko
+	insmod /lib/modules/lowrate.ko
+	echo 2  > /sys/class/hsmodem/hsModem0/conf/mt_id
+        /opt/zedboard/bin/hsloader
+        ;;
+  stop)
+        printf "Use Kill Application with pid"
+        ;;
+  restart|reload)
+        "$0" stop
+        "$0" start
+        ;;
+  *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+esac
+
+exit $?

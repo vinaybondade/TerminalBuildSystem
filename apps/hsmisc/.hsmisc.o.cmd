@@ -1,0 +1,1 @@
+cmd_/home/yaniv/share/hiSkyDev/apps/hsmisc/hsmisc.o := /home/yaniv/share/hiSkyDev/apps/hsmisc/../../3rdparty/zedboard/buildroot-bins-zedboard/host/bin/arm-linux-gnueabihf-ld -EL    -r -o /home/yaniv/share/hiSkyDev/apps/hsmisc/hsmisc.o /home/yaniv/share/hiSkyDev/apps/hsmisc/src/hsmisc.o 

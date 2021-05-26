@@ -1,0 +1,40 @@
+#!/bin/sh
+#
+# Start the network....
+#
+# Debian ifupdown needs the /run/network lock directory
+mkdir -p /run/network
+
+case "$1" in
+  start)
+        printf "Starting network (eth0): "
+        ifconfig | grep "192.168.1.5"
+        is_ready=$?
+	num_tries=0
+
+        while [ $is_ready -ne 0 ] && [ $num_tries -le 20 ]
+        do
+		sleep 0.1
+                /sbin/ifup eth0
+                ifconfig | grep "192.168.1.5"
+                is_ready=$?
+		num_tries=$((num_tries+1))
+        done
+	/usr/sbin/ethtool -s eth0 speed 100 duplex full autoneg off
+        [ $? = 0 ] && echo "S41network OK" || echo "S41network FAIL"
+        ;;
+  stop)
+        printf "Stopping network (eth0): "
+        /sbin/ifdown eth0
+        [ $? = 0 ] && echo "OK" || echo "FAIL"
+        ;;
+  restart|reload)
+        "$0" stop
+        "$0" start
+        ;;
+  *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+esac
+
+exit $?

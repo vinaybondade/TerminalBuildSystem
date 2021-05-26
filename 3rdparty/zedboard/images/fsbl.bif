@@ -1,0 +1,4 @@
+the_ROM_image:
+{
+	[bootloader] /home/vinay/Workspace/06_01_21/hiSkyDev_27.10.20/hiSkyDev_04.08.20/3rdparty/zedboard/images/zynq_fsbl.elf
+}

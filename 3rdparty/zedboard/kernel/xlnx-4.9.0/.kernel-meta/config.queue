@@ -1,0 +1,5 @@
+configs//./openamp.cfg # non-hardware
+configs//./defconfig # non-hardware
+configs//./openamp.cfg # non-hardware
+configs//./plnx_kernel.cfg # non-hardware
+configs//./bsp.cfg # non-hardware

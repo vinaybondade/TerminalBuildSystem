@@ -1,0 +1,104 @@
+Using .kernel-meta/configs//./openamp.cfg as base
+Merging .kernel-meta/configs//./defconfig
+Value of CONFIG_UIO_PDRV_GENIRQ is redefined by fragment .kernel-meta/configs//./defconfig:
+Previous value: CONFIG_UIO_PDRV_GENIRQ=m
+New value: CONFIG_UIO_PDRV_GENIRQ=y
+
+Merging .kernel-meta/configs//./openamp.cfg
+Value of CONFIG_UIO_PDRV_GENIRQ is redefined by fragment .kernel-meta/configs//./openamp.cfg:
+Previous value: CONFIG_UIO_PDRV_GENIRQ=y
+New value: CONFIG_UIO_PDRV_GENIRQ=m
+
+Merging .kernel-meta/configs//./plnx_kernel.cfg
+Value of CONFIG_MTD is redefined by fragment .kernel-meta/configs//./plnx_kernel.cfg:
+Previous value: CONFIG_MTD=y
+New value: CONFIG_MTD=y CONFIG_MTD=y
+
+Merging .kernel-meta/configs//./bsp.cfg
+make[1]: Entering directory '/home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work/plnx_arm-xilinx-linux-gnueabi/linux-xlnx/4.9-xilinx-v2017.4+gitAUTOINC+b450e900fd-r0/linux-plnx_arm-standard-build'
+  HOSTCC  scripts/basic/fixdep
+  GEN     ./Makefile
+  HOSTCC  scripts/kconfig/conf.o
+  SHIPPED scripts/kconfig/zconf.tab.c
+  SHIPPED scripts/kconfig/zconf.lex.c
+  SHIPPED scripts/kconfig/zconf.hash.c
+  HOSTCC  scripts/kconfig/zconf.tab.o
+  HOSTLD  scripts/kconfig/conf
+scripts/kconfig/conf  --alldefconfig Kconfig
+./.tmp.config.pOEa9NYxt2:250:warning: override: reassigning to symbol MTD
+./.tmp.config.pOEa9NYxt2:252:warning: override: reassigning to symbol MTD_OF_PARTS
+./.tmp.config.pOEa9NYxt2:255:warning: override: reassigning to symbol SERIAL_OF_PLATFORM
+#
+# configuration written to .config
+#
+make[1]: Leaving directory '/home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work/plnx_arm-xilinx-linux-gnueabi/linux-xlnx/4.9-xilinx-v2017.4+gitAUTOINC+b450e900fd-r0/linux-plnx_arm-standard-build'
+Value requested for CONFIG_MTD not in final .config
+Requested value:  CONFIG_MTD=y
+CONFIG_MTD=y
+Actual value:     CONFIG_MTD=y
+
+Value requested for CONFIG_MTD_OF_PARTS not in final .config
+Requested value:  CONFIG_MTD_OF_PARTS=y
+CONFIG_MTD_OF_PARTS=y
+Actual value:     CONFIG_MTD_OF_PARTS=y
+
+Value requested for CONFIG_SERIAL_OF_PLATFORM not in final .config
+Requested value:  CONFIG_SERIAL_OF_PLATFORM=y
+CONFIG_SERIAL_OF_PLATFORM=y
+Actual value:     
+
+Value requested for CONFIG_MMC_SDHCI_OF_XILINX_PS not in final .config
+Requested value:  CONFIG_MMC_SDHCI_OF_XILINX_PS=y
+Actual value:     
+
+Value requested for CONFIG_MTD not in final .config
+Requested value:  CONFIG_MTD=y
+CONFIG_MTD=y
+Actual value:     CONFIG_MTD=y
+
+Value requested for CONFIG_MTD_OF_PARTS not in final .config
+Requested value:  CONFIG_MTD_OF_PARTS=y
+CONFIG_MTD_OF_PARTS=y
+Actual value:     CONFIG_MTD_OF_PARTS=y
+
+Value requested for CONFIG_SERIAL_OF_PLATFORM not in final .config
+Requested value:  CONFIG_SERIAL_OF_PLATFORM=y
+CONFIG_SERIAL_OF_PLATFORM=y
+Actual value:     
+
+Value requested for CONFIG_SPI_XILINX_PS_QSPI not in final .config
+Requested value:  CONFIG_SPI_XILINX_PS_QSPI=y
+Actual value:     
+
+Value requested for CONFIG_USB_EHCI_XUSBPS not in final .config
+Requested value:  CONFIG_USB_EHCI_XUSBPS=y
+Actual value:     
+
+Value requested for CONFIG_USB_XUSBP not in final .config
+Requested value:  CONFIG_USB_XUSBP=y
+Actual value:     
+
+Value requested for CONFIG_USB_XUSBPS_DR_OF not in final .config
+Requested value:  CONFIG_USB_XUSBPS_DR_OF=y
+Actual value:     
+
+Value requested for CONFIG_USB_XUSBPS_OTG not in final .config
+Requested value:  CONFIG_USB_XUSBPS_OTG=y
+Actual value:     
+
+Value requested for CONFIG_USB_SUSPEND not in final .config
+Requested value:  CONFIG_USB_SUSPEND=y
+Actual value:     
+
+Value requested for CONFIG_USB_GADGET_XUSBPS not in final .config
+Requested value:  CONFIG_USB_GADGET_XUSBPS=y
+Actual value:     
+
+Value requested for CONFIG_XILINX_ZED_USB_OTG not in final .config
+Requested value:  CONFIG_XILINX_ZED_USB_OTG=y
+Actual value:     
+
+Value requested for CONFIG_USB_ETH_RNDIS not in final .config
+Requested value:  # CONFIG_USB_ETH_RNDIS is not set
+Actual value:     
+

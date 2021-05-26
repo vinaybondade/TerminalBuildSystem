@@ -1,0 +1,33 @@
+There is an ability to keep u-boot as separate partition. And later on, to create additional entry in DTS file.
+
+To create separate u-boot partition image I've been doing next:
+
+The .bif file:
+
+the_ROM_image:
+{
+[bootloader] /home/zedboard/images/zynq_fsbl.elf
+[offset=0x100000,checksum=none,reserve=0x200000,load=0x400000,startup=0x400000] /home/zedboard/images/u-boot.elf
+}
+
+Next, I'm running the bootgen as follow:
+
+./petalinux-v2017/tools/hsm/bin/bootgen -arch zynq -image /home/zedboard/images/fsbl.bif -split bin -log trace
+
+It will create follow .bin files:
+
+/home/zedboard/images/fsbl.bin
+
+./u-boot.elf.bin
+
+Next, I'm switching off the zynq board, changing the boot type to JTAG, turning on the zynq board 
+
+and burning both images:
+
+./petalinux-v2017/tools/hsm/bin/program_flash -f /home/zedboard/images/fsbl.bin -fsbl /home/zedboard/images/zynq_fsbl.elf -flash_type qspi_single -blank_check -cable type xilinx_tcf url TCP:localhost:3121
+
+./petalinux-v2017/tools/hsm/bin/program_flash -f ./u-boot.elf.bin -offset 0x100000 -fsbl /home/zedboard/images/zynq_fsbl.elf -flash_type qspi_single -blank_check -cable type xilinx_tcf url TCP:localhost:3121
+
+And, it's works! I can create new u-boot.elf.bin for updated u-boot image and reburn it.
+
+In addition, in case that the DTB will contain new mtd partition for this - I can use flashcp from Linux.

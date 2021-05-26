@@ -1,0 +1,85 @@
+------------------------------------------------------------
+- Instruction to use with the New Linux Environment
+------------------------------------------------------------
+
+1. Unzip the file hiSkyDev-04.08.2020.tgz
+2. go to the main directory, hiSkyDev and use: source setup.sh
+
+3. to clean the build use:
+
+make dev=zedboard clean_fsbl 
+make dev=zedboard clean_u-boot
+make dev=zedboard clean_kernel 
+make dev=zedboard clean_buildroot 
+
+Or
+
+make dev=zedboard clean_all
+
+For Application cleanup use:
+make dev=zedboard distclean
+
+* make sure that the images folder under hiSkyDev/3rdparty/zedboard/images 
+contains the following files:
+
+a. fsbl.bif
+b. u-boot.bif
+c. fpga.bif
+d. fpga.bit
+
+4. to build fsbl, u-bbot, kernel or file-system use:
+
+make dev=zedboard fsbl
+make dev=zedboard u-boot
+make dev=zedboard kernel
+make dev=zedboard rootfs *
+
+* to use rootfs build you need to prepare the buildroot or use buildroot_image instead of rootfs
+
+To build the whole system use:
+
+make dev=zedboard image
+
+5. to build the file-system in 2 steps do the followings:
+
+    make dev=zedboard buildroot 
+    to build the buildroot
+
+5.1. Extarct the file buildroot-bins-zedboard-xxxx-xx-xx-.tgz under
+     3rdparty/zedboard and make sure the new directory is called buildroot-bins-zedboard
+   * Delete the previous directory 'buildroot-bins-zedboard'
+
+5.2 make dev=zedboard rootfs
+
+------------------------------------------------------------
+- U-Boot, Kernel, Buildroot Configuration
+------------------------------------------------------------
+
+6.0 For buildroot configuration changes use the followings:
+    make dev=zedboard buildroot_config
+
+6.1 Select the options you need, save, exit and use:
+    make dev=zedboard buildroot_saveconfig
+
+6.2 Use the commands below to build the file-system
+    make dev=zedboard buildroot_image or
+    make dev=zedboard image
+
+7.0 For kernel configuration use the followings:
+   
+    make dev=zedboard kernel_config
+    make dev=zedboard kernel_saveconfig
+
+7.1 Build the kernel using the command
+    make dev=zedboard kernel or
+    make dev=zedboard image
+
+8.0 For kernel configuration use the followings:
+   
+    make dev=zedboard kernel_config
+    make dev=zedboard kernel_saveconfig
+
+8.1 Build the u-boot using the commands above
+    make dev=zedboard u-boot or
+    make dev=zedboard image
+

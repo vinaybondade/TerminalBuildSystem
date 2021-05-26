@@ -1,0 +1,28 @@
+						HUB_PP ModemsManager TX Functionality implementation
+
+1.	Flow
+2.	API
+
+
+
+
+
+1.	Flow
+	*)	Check if we're still should run
+	*)	Check ACKs queue - if not empty, pull ACK package and transmit - don't wait for ACK on ACK
+	*)	Check TX queue
+		Build TX package skeleton - prepare buf, add ID/Preamble/
+		Pull TS messages while it fits to TX package (1500) and copy them to TX package
+		Transmit TX package
+		Wait for ACK notification from RX thread
+		If Ack not arrives during predefined timeout
+			 - perform retransmit and wait for ack - do it predefined amount of times
+			 - Update statistics and logs
+		If Ack arrived during 'timeout' - update statistics and logs
+	*)	Go back to the begining of the Loop
+
+2.	API
+	/* All functions returns 0 in case of success and -1 in case of failure */
+	int init_txthr(modem_t** modems, int modems_count);
+	int	stop_txthr(void);
+	int get_txthr_status(int *status); 

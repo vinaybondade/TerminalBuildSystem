@@ -1,0 +1,84 @@
+diff --git a/Makefile b/Makefile
+index 35b4c19..839416d 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1042,6 +1042,7 @@  firmware_install: FORCE
+ 
+ #Default location for installed headers
+ export INSTALL_HDR_PATH = $(objtree)/usr
++export INSTALL_MODULES_HDR_PATH = $(objtree)/usr/src
+ 
+ # If we do an all arch process set dst to asm-$(hdr-arch)
+ hdr-dst = $(if $(KBUILD_HEADERS), dst=include/asm-$(hdr-arch), dst=include/asm)
+@@ -1076,6 +1077,10 @@  headers_check: headers_install
+ 	$(Q)$(MAKE) $(hdr-inst)=include/uapi HDRCHECK=1
+ 	$(Q)$(MAKE) $(hdr-inst)=arch/$(hdr-arch)/include/uapi/asm $(hdr-dst) HDRCHECK=1
+ 
++PHONY += modules_headers_install
++modules_headers_install:
++	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/modules_headers_install.sh
++
+ # ---------------------------------------------------------------------------
+ # Kernel selftest
+ 
+@@ -1274,7 +1279,10 @@  help:
+ 	@echo  '  kernelversion	  - Output the version stored in Makefile (use with make -s)'
+ 	@echo  '  image_name	  - Output the image name (use with make -s)'
+ 	@echo  '  headers_install - Install sanitised kernel headers to INSTALL_HDR_PATH'; \
+-	 echo  '                    (default: $(INSTALL_HDR_PATH))'; \
++	 echo  '                    (default: $(INSTALL_HDR_PATH))';
++	@echo  '  modules_headers_install - Install kernel headers to INSTALL_MODULES_HDR_PATH'; \
++	 echo  '                            to be used for out of tree modules build'; \
++	 echo  '                            (default: $(INSTALL_MODULES_HDR_PATH))'; \
+ 	 echo  ''
+ 	@echo  'Static analysers'
+ 	@echo  '  checkstack      - Generate a list of stack hogs'
+diff --git a/scripts/modules_headers_install.sh b/scripts/modules_headers_install.sh
+new file mode 100755
+index 0000000..ebced17
+--- /dev/null
++++ b/scripts/modules_headers_install.sh
+@@ -0,0 +1,40 @@ 
++#!/bin/sh
++
++# modules_headers_install.sh
++#
++# Simple script to extract linux headers and friends needed to build
++# out of tree modules without having the all source tree around.
++#
++# Inspired from scripts/package/builddeb
++
++HDR_SRC_FILES=$objtree/hdrsrcfiles
++HDR_OBJ_FILES=$objtree/hdrobjfiles
++DEST_DIR=linux-modules-headers
++
++if [ -n "$INSTALL_MODULES_HDR_PATH" ]; then
++	DEST_DIR="$INSTALL_MODULES_HDR_PATH"
++fi
++
++#fresh start
++rm -f $HDR_SRC_FILES
++rm -f $HDR_OBJ_FILES
++
++#build list of headers and friends
++(cd $srctree; find . -name Makefile\* -o -name Kconfig\* -o -name \*.pl) \
++	> "$HDR_SRC_FILES"
++(cd $srctree; find arch/$SRCARCH/include include scripts -type f) \
++	>> "$HDR_SRC_FILES"
++(cd $srctree; find arch/$SRCARCH -name module.lds -o -name Kbuild.platforms \
++	-o -name Platform) >> "$HDR_SRC_FILES"
++(cd $srctree; find $(find arch/$SRCARCH -name include -o -name scripts \
++	-type d) -type f) >> "$HDR_SRC_FILES"
++(cd $objtree; find arch/$SRCARCH/include Module.symvers include scripts \
++	-type f) >> "$HDR_OBJ_FILES"
++
++mkdir -p "$DEST_DIR"
++
++(cd $srctree; tar -c -f - -T -) < "$HDR_SRC_FILES" | (cd $DEST_DIR; tar -xf -)
++(cd $objtree; tar -c -f - -T -) < "$HDR_OBJ_FILES" | (cd $DEST_DIR; tar -xf -)
++mkdir -P $DEST_DIR/tools/objtool
++(cd $srctree; cp -a tools/objtool/arch $DEST_DIR/tools/objtool; cp -a tools/objtool/objtool $DEST_DIR/tools/objtool; cp -a tools/objtool/fixdep $DEST_DIR/tools/objtool; cp -a tools/objtool/sync-check.sh $DEST_DIR/tools/objtool)
++
++# copy .config manually to be where it's expected to be
++(cd $objtree; cp $KCONFIG_CONFIG $DEST_DIR/.config)
+
