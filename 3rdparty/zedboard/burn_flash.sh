@@ -1,5 +1,5 @@
 #!/bin/bash
-HISKY_SDK=/home/vinay/Workspace/06_01_21/hiSkyDev_27.10.20/hiSkyDev_04.08.20
+HISKY_SDK=/home/vinay/Workspace/TerminalBuildSystem
 PETALINUX_SDK=
 
 FLASHUTIL=$PETALINUX_SDK/tools/hsm/bin/program_flash
