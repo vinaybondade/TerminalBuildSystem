@@ -1,0 +1,204 @@
+/*
+ * crc.c
+ *
+ *  Created on: Feb 1, 2017
+ *      Author: yevgenyk
+ */
+
+/*
+ * crc.c
+ *
+ *  Created on: Jan 29, 2014
+ *      Author: yevgenyk
+ *
+ * Description: Slow and fast implementations of the CRC standards.
+ *
+ * Notes:       The parameters for each supported CRC standard are
+ *				defined in the header file crc.h.  The implementations
+ *				here should stand up to further additions to that list.
+ *
+ *
+ * Copyright (c) 2000 by Michael Barr.  This software is placed into
+ * the public domain and may be used for any purpose.  However, this
+ * notice must not be changed or removed and no warranty is either
+ * expressed or implied by its publication or distribution.
+ */
+#include <linux/module.h>
+#include <linux/kernel.h>
+#include "hs-crc.h"
+
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("yevgenyk");
+
+/*
+ * Derive parameters from the standard-specific parameters in crc.h.
+ */
+#define WIDTH    (8 * sizeof(crc))
+#define TOPBIT   (1 << (WIDTH - 1))
+
+#define REFLECT_DATA(X)			(X)
+#define REFLECT_REMAINDER(X)		(X)
+
+/*********************************************************************
+ *
+ * Function:    crcSlow()
+ *
+ * Description: Compute the CRC of a given message.
+ *
+ * Notes:
+ *
+ * Returns:		The CRC of the message.
+ *
+ *********************************************************************/
+//crc
+//crcSlow(unsigned char const message[], int nBytes)
+unsigned short crcSlow(unsigned char* pMessage, int nBytes)
+{
+    crc            remainder = INITIAL_REMAINDER;
+	int            byte;
+	unsigned char  bit;
+	unsigned char  temp;
+	unsigned short origCRC;
+	unsigned short CRC;
+	//u8			   message[MAXIMUM_MESSAGE_SIZE];
+
+
+    /*
+     * Perform modulo-2 division, a byte at a time.
+     */
+    for (byte = 0; byte < nBytes; ++byte)
+    {
+        /*
+         * Bring the next byte into the remainder.
+         */
+    	//temp = REFLECT_DATA(message[byte]);
+       // remainder ^= (REFLECT_DATA(message[byte]) << (WIDTH - 8));
+
+        temp = REFLECT_DATA(*(pMessage+byte));
+        remainder ^= (REFLECT_DATA(*(pMessage+byte)) << (WIDTH - 8));
+
+        /*
+         * Perform modulo-2 division, a bit at a time.
+         */
+        for (bit = 8; bit > 0; --bit)
+        {
+            /*
+             * Try to divide the current data bit.
+             */
+            if (remainder & TOPBIT)
+            {
+                remainder = (remainder << 1) ^ POLYNOMIAL;
+            }
+            else
+            {
+                remainder = (remainder << 1);
+            }
+        }
+    }
+
+    /*
+     * The final remainder is the CRC result.
+     */
+    origCRC = (REFLECT_REMAINDER(remainder) ^ FINAL_XOR_VALUE);
+    CRC = ((origCRC&0xFF)<<8) | ((origCRC&0xFF00)>>8);
+    return CRC;
+
+}   /* crcSlow() */
+EXPORT_SYMBOL_GPL(crcSlow);
+
+crc  crcTable[256];
+
+
+/*********************************************************************
+ *
+ * Function:    crcInit()
+ *
+ * Description: Populate the partial CRC lookup table.
+ *
+ * Notes:		This function must be rerun any time the CRC standard
+ *				is changed.  If desired, it can be run "offline" and
+ *				the table results stored in an embedded system's ROM.
+ *
+ * Returns:		None defined.
+ *
+ *********************************************************************/
+void
+crcInit(void)
+{
+    crc			   remainder;
+	int			   dividend;
+	unsigned char  bit;
+
+
+    /*
+     * Compute the remainder of each possible dividend.
+     */
+    for (dividend = 0; dividend < 256; ++dividend)
+    {
+        /*
+         * Start with the dividend followed by zeros.
+         */
+        remainder = dividend << (WIDTH - 8);
+
+        /*
+         * Perform modulo-2 division, a bit at a time.
+         */
+        for (bit = 8; bit > 0; --bit)
+        {
+            /*
+             * Try to divide the current data bit.
+             */
+            if (remainder & TOPBIT)
+            {
+                remainder = (remainder << 1) ^ POLYNOMIAL;
+            }
+            else
+            {
+                remainder = (remainder << 1);
+            }
+        }
+
+        /*
+         * Store the result into the table.
+         */
+        crcTable[dividend] = remainder;
+    }
+
+}   /* crcInit() */
+
+
+/*********************************************************************
+ *
+ * Function:    crcFast()
+ *
+ * Description: Compute the CRC of a given message.
+ *
+ * Notes:		crcInit() must be called first.
+ *
+ * Returns:		The CRC of the message.
+ *
+ *********************************************************************/
+crc
+crcFast(unsigned char const message[], int nBytes)
+{
+    crc	           remainder = INITIAL_REMAINDER;
+    unsigned char  data;
+	int            byte;
+
+
+    /*
+     * Divide the message by the polynomial, a byte at a time.
+     */
+    for (byte = 0; byte < nBytes; ++byte)
+    {
+        data = REFLECT_DATA(message[byte]) ^ (remainder >> (WIDTH - 8));
+  		remainder = crcTable[data] ^ (remainder << 8);
+    }
+
+    /*
+     * The final remainder is the CRC.
+     */
+    return (REFLECT_REMAINDER(remainder) ^ FINAL_XOR_VALUE);
+
+}   /* crcFast() */
