@@ -52,11 +52,21 @@ typedef struct airContext_t
 int is_air_msg_valid(airContext_t* ctx);
 int calc_num_of_frags(int maxDataOneFragment, int netoFreeSpace, int dataSize);
 void destroy_air_protocol(airContext_t* ctx);
+void destroy_air_protocol_rx(airContext_t* ctx);
+void destroy_air_protocol_tx(airContext_t* ctx);
 int __must_check init_air_protocol(airContext_t* ctx,
 						satHeaderTypes_t airMode,
 						uint16_t satMsgLenTx,
 						uint16_t satMsgLenRx);
-					
+		
+int __must_check init_air_protocol_rx(airContext_t* ctx,
+				      satHeaderTypes_t airMode,
+				      uint16_t satMsgLenRx);
+
+int __must_check init_air_protocol_tx(airContext_t* ctx,
+				      satHeaderTypes_t airMode,
+				      uint16_t satMsgLenTx);
+			
 int air_msg_build(airContext_t* ctx, uint8_t modemEbN0data6bit);
 
 int parse_air_msg(airContext_t* ctx, airProtStat_t* stat);

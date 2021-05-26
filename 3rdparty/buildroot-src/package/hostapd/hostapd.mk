@@ -4,11 +4,8 @@
 #
 ################################################################################
 
-HOSTAPD_VERSION = 2.6
+HOSTAPD_VERSION = 2.9
 HOSTAPD_SITE = http://w1.fi/releases
-HOSTAPD_PATCH = \
-	http://w1.fi/security/2017-1/rebased-v2.6-0001-hostapd-Avoid-key-reinstallation-in-FT-handshake.patch \
-	http://w1.fi/security/2017-1/rebased-v2.6-0005-Fix-PTK-rekeying-to-generate-a-new-ANonce.patch
 HOSTAPD_SUBDIR = hostapd
 HOSTAPD_CONFIG = $(HOSTAPD_DIR)/$(HOSTAPD_SUBDIR)/.config
 HOSTAPD_DEPENDENCIES = host-pkgconf libnl
@@ -43,11 +40,6 @@ HOSTAPD_CONFIG_EDITS += 's/\#\(CONFIG_TLS=openssl\)/\1/'
 else
 HOSTAPD_CONFIG_DISABLE += CONFIG_EAP_PWD
 HOSTAPD_CONFIG_EDITS += 's/\#\(CONFIG_TLS=\).*/\1internal/'
-endif
-
-ifeq ($(BR2_PACKAGE_HOSTAPD_DRIVER_RTW),y)
-HOSTAPD_PATCH += https://github.com/pritambaral/hostapd-rtl871xdrv/raw/master/rtlxdrv.patch
-HOSTAPD_CONFIG_SET += CONFIG_DRIVER_RTW
 endif
 
 ifeq ($(BR2_PACKAGE_HOSTAPD_ACS),y)
@@ -85,12 +77,7 @@ HOSTAPD_CONFIG_ENABLE += CONFIG_VLAN_NETLINK
 endif
 
 define HOSTAPD_CONFIGURE_CMDS
-	cp $(@D)/hostapd/defconfig $(HOSTAPD_CONFIG)
-	sed -i $(patsubst %,-e 's/^#\(%\)/\1/',$(HOSTAPD_CONFIG_ENABLE)) \
-		$(patsubst %,-e 's/^\(%\)/#\1/',$(HOSTAPD_CONFIG_DISABLE)) \
-		$(patsubst %,-e '1i%=y',$(HOSTAPD_CONFIG_SET)) \
-		$(patsubst %,-e %,$(HOSTAPD_CONFIG_EDITS)) \
-		$(HOSTAPD_CONFIG)
+	cp -v $(@D)/../../../../buildroot-src/package/hostapd/defconfig $(HOSTAPD_CONFIG)
 endef
 
 define HOSTAPD_BUILD_CMDS

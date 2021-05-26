@@ -965,9 +965,24 @@ static long hsModem_ioctl(struct file *filep,
 
 		disable_irq(hsModem->irq_rx);
 
+#ifdef DEBUG_PRINT_EX
+		printk ("IOCTL: HSMODEM_CALIB_RX - rx_frame_bytes: %d\n", hsModem->modem_rx_param.rx_frame_bytes);
+#endif
 		/* write RX rate to modem */
 		hsModem_dbg(1, "Setting Rx rate\n");
 		hsModem_conf_rx_rate(hsModem);
+
+		/* reinitialize buffer */
+
+		destroy_air_protocol_rx(&hsModem->ctx);
+
+		err = init_air_protocol_rx(&hsModem->ctx,
+					  (satHeaderTypes_t) LOW_RATE_TYPE_HEADER,
+					  hsModem->modem_rx_param.rx_frame_bytes);
+
+		if(err) {
+			destroy_air_protocol_rx(&hsModem->ctx);
+		}
 
 		enable_irq(hsModem->irq_rx);
 	}
@@ -982,9 +997,25 @@ static long hsModem_ioctl(struct file *filep,
 
 		disable_irq(hsModem->irq_tx);
 
+#ifdef DEBUG_PRINT_EX
+		printk ("IOCTL: HSMODEM_CALIB_TX - tx_frame_bytes: %d\n", hsModem->modem_tx_param.tx_frame_bytes);
+#endif
+
 		/* write TX rate to modem */
 		hsModem_dbg(1, "Setting Tx rate\n");
 		hsModem_conf_tx_rate(hsModem);
+
+		/* reinitialize buffer */
+
+		destroy_air_protocol_tx(&hsModem->ctx);
+
+		err = init_air_protocol_tx(&hsModem->ctx,
+					  (satHeaderTypes_t)LOW_RATE_TYPE_HEADER,
+					  hsModem->modem_tx_param.tx_frame_bytes);
+
+		if(err) {
+			destroy_air_protocol_tx(&hsModem->ctx);
+		}
 
 		enable_irq(hsModem->irq_tx);
 	}
@@ -1189,6 +1220,7 @@ static int hsModem_probe(struct platform_device *pdev)
 	/* Validate hardware match the driver */
 	hwVer = readReg(hsModem->baseAddr, HSMDM_REG_VERSION_OFFSET);
 	hwRev = readReg(hsModem->baseAddr, HSMDM_REG_REVISION_OFFSET);
+
 	if(hwVer != HW_SUPPORT_VER || hwRev != HW_SUPPORT_REV)
 	{
 		dev_err(hsModem->dt_device,
@@ -1389,6 +1421,7 @@ static irqreturn_t hsModem_irq_rx_handler(int irq, void *arg)
 	enable_irq(hsModem->irq_tx);
 	return IRQ_HANDLED;
 }
+
 static irqreturn_t hsModem_irq_tx_handler(int irq, void *arg)
 {
 	int err;
@@ -1456,6 +1489,15 @@ static int hsModem_handle_rpc_intr(struct hsModem_t* hsModem)
 	}
 	else
 	{
+
+#ifdef DEBUG_PRINT_EX
+		unsigned char *p_data;
+		p_data = (&hsModem->ctx)->satMsgRx;
+		unsigned char msg_length = (&hsModem->ctx)->a_info.satMsgLenRx;
+
+		printk(KERN_WARNING, "hsModem_read_pck with size of: %d\n", msg_length);
+		print_hex_dump (KERN_DEBUG, "MESSAGE_FROM_PP", DUMP_PREFIX_NONE, 16, 1, p_data, msg_length, false);
+#endif
 		rxCrcOk = is_air_msg_valid(&hsModem->ctx);
 	}
 
@@ -1495,6 +1537,11 @@ static int hsModem_read_pck(struct hsModem_t* hsModem)
 
 	const uint32_t dataToRead = min(rdfo, satMsgLen);
 
+
+	if(!dst) {
+		return -EINVAL;
+	}
+
 	if(rdfo < satMsgLen)
 	{
 		hsModem_dbg(7, "rdfo=%u, satMsgLen=%u\n", rdfo, satMsgLen);
@@ -1521,6 +1568,7 @@ static int hsModem_read_pck(struct hsModem_t* hsModem)
 static int hsModem_handle_tpr_intr(struct hsModem_t* hsModem)
 {
 	int ret;
+
 	const uint32_t ebn0 = readReg(hsModem->baseAddr, HSMDM_REG_EBN0_OFFSET);
 	// ebn0 is 9 bits: ([8]neg/pos | [7:0] data)
 	const uint8_t ebn0_6bit = (uint8_t)(ebn0 >> 3);
@@ -1550,6 +1598,10 @@ static int hsModem_handle_tpr_intr(struct hsModem_t* hsModem)
 	}
 	if(ret > 0)
 	{
+
+#ifdef DEBUG_PRINT_EX
+		printk ("Write air pakcet with size: %d to modem fifo\n", hsModem->ctx.a_info.satMsgLenTx);
+#endif
 		hsModem_write_pck(hsModem);
 		hsModem->stat.txIrqCnt++;
 	}
@@ -1616,6 +1668,10 @@ static void hsModem_conf_rx_rate(struct hsModem_t *hsModem)
 	hsModem_rst(hsModem, MODEM_RX, 1);
 	hsModem_rst(hsModem, MODEM_RX, 0);
 
+#ifdef DEBUG_PRINT_EX
+	printk ("hsModem_conf_rx_rate rx_frame_bytes: %d\n", param->rx_frame_bytes);
+#endif
+
 	writeReg(hsModem->baseAddr,
 			HSMDM_REG_RX_PACKET_SIZE_OFFSET,
 			param->rx_frame_bytes);
@@ -1681,6 +1737,7 @@ static void hsModem_conf_rx_rate(struct hsModem_t *hsModem)
 			param->rxs_num_taps);
 
 	writeReg(hsModem->baseAddr, HSMDM_REG_CHANGE_RATE_FLAG_OFFSET, t_flag);
+
 	if(t_flag) {
 		t_flag = 0;
 	} else {
@@ -1697,6 +1754,9 @@ static void hsModem_conf_tx_rate(struct hsModem_t *hsModem)
 
 	hsModem_rst(hsModem, MODEM_TX, 1);
 
+#ifdef DEBUG_PRINT_EX
+	printk ("hsModem_conf_tx_rate tx_frame_bytes: %d\n", param->tx_frame_bytes);
+#endif
 	writeReg(hsModem->baseAddr,
 			HSMDM_REG_TX_PACKET_SIZE_OFFSET,
 			param->tx_frame_bytes);

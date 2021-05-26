@@ -173,8 +173,8 @@ static int __init hsFifo_init(void)
 		{
 			while((--i) >= 0)
 			{
-				printk(KERN_ERR "Remove minor %d\n",
-					MINOR(hsFifoDev->devt) +i);
+				//printk(KERN_ERR "Remove minor %d\n",
+					//MINOR(hsFifoDev->devt) +i);
 
 				curr_dev = MKDEV(MAJOR(hsFifoDev->devt),
 								MINOR(hsFifoDev->devt) +i);
@@ -190,13 +190,13 @@ static int __init hsFifo_init(void)
 		err = cdev_add(&hsFifoDev->char_device[i], curr_dev, 1);
 		if (err < 0)
 		{
-			printk(KERN_ERR "Remove dev minor %d\n", MINOR(hsFifoDev->devt) +i);
+			//printk(KERN_ERR "Remove dev minor %d\n", MINOR(hsFifoDev->devt) +i);
 			device_destroy(gDeviceClass, curr_dev);
 			printk(KERN_ERR "couldn't create character device\n");
 			while((--i) >= 0)
 			{
-				printk(KERN_ERR "Remove minor %d\n",
-					MINOR(hsFifoDev->devt) +i);
+				//printk(KERN_ERR "Remove minor %d\n",
+					//MINOR(hsFifoDev->devt) +i);
 				curr_dev = MKDEV(MAJOR(hsFifoDev->devt),
 								MINOR(hsFifoDev->devt) +i);
 				cdev_del(&hsFifoDev->char_device[i]);
@@ -204,7 +204,7 @@ static int __init hsFifo_init(void)
 				goto err_chrdev_region;
 			}
 		}
-		printk(KERN_INFO "Added minor %d\n", MINOR(hsFifoDev->devt) +i);
+		//printk(KERN_INFO "Added minor %d\n", MINOR(hsFifoDev->devt) +i);
 	}
 
 	return 0;
@@ -226,7 +226,7 @@ static void __exit hsFifo_exit(void)
 
 	for (i = 0; i < max_minor; ++i)
 	{
-		printk(KERN_INFO "Remove minor %d\n", MINOR(hsFifoDev->devt) +i);
+		//printk(KERN_INFO "Remove minor %d\n", MINOR(hsFifoDev->devt) +i);
 		curr_dev = MKDEV(MAJOR(hsFifoDev->devt), MINOR(hsFifoDev->devt) +i);
 		cdev_del(&hsFifoDev->char_device[i]);
 		device_destroy(gDeviceClass, curr_dev);
@@ -234,7 +234,7 @@ static void __exit hsFifo_exit(void)
 	unregister_chrdev_region(hsFifoDev->devt, max_minor);
 	for (i = 0; i < max_minor; ++i)
 	{
-		printk(KERN_INFO "Remove kfifo %d\n", i);
+		//printk(KERN_INFO "Remove kfifo %d\n", i);
 		hsFifo_free_fifo(&hsFifoDev->hsFifo[i]);
 	}
 	class_destroy(gDeviceClass);
@@ -252,7 +252,7 @@ static int hsFifo_open(struct inode *inod, struct file *f)
 
 	unsigned i = iminor(inod);
 
-	printk(KERN_INFO "Open minor %u\n", i);
+	//printk(KERN_INFO "Open minor %u\n", i);
 
 	if((i < HSFIFO_TO_USER) && ((f->f_flags & O_ACCMODE) != O_WRONLY))
 	{
@@ -276,7 +276,7 @@ static int hsFifo_release(struct inode *inod, struct file *f)
 	unsigned i = iminor(inod);
 	struct hsFifo_t *hsFifo;
 
-	printk(KERN_INFO "Release minor %u\n", i);
+	//printk(KERN_INFO "Release minor %u\n", i);
 
 	hsFifo = &hsFifoDev->hsFifo[i];
 

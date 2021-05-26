@@ -59,6 +59,9 @@ int __must_check init_air_protocol(airContext_t* ctx,
 	airProtCtx_t* ap = apctx[airMode];
 	airMsgInfo_t* a_info;
 	
+	//printk ("init_air_protocol satMsgLenRx: %d\n", satMsgLenRx);
+	//printk ("init_air_protocol satMsgLenTx: %d\n", satMsgLenTx);
+
 	if(!ctx) {
 		return -EINVAL;
 	}
@@ -90,6 +93,9 @@ int __must_check init_air_protocol(airContext_t* ctx,
 		return -ENOMEM;
 	}
 
+	//printk ("XXXXXXXXXXXXXX init_air_protocol satMsgLenRx: %d XXXXXXXXXXXXXX\n", satMsgLenRx);
+	//printk ("XXXXXXXXXXXXXX init_air_protocol satMsgLenTx: %d XXXXXXXXXXXXXX\n", satMsgLenTx);
+
 	a_info->satMsgLenRx = satMsgLenRx;
 	hsModem_dbg(1, "satMsgLenRx = %u\n", satMsgLenRx);
 	ctx->satMsgRx = kmalloc(satMsgLenRx, GFP_KERNEL);
@@ -99,6 +105,94 @@ int __must_check init_air_protocol(airContext_t* ctx,
 	
 	return 0;
 }
+		 
+int __must_check init_air_protocol_rx ( airContext_t* ctx,
+					satHeaderTypes_t airMode,
+					uint16_t satMsgLenRx)
+{
+
+	airProtCtx_t* ap = apctx[airMode];
+	airMsgInfo_t* a_info;
+	
+	if(!ctx) {
+		return -EINVAL;
+	}
+	if(!ap) {
+		return -EUNATCH;
+	}
+	
+	ctx->ap = ap;
+	a_info = &(ctx->a_info);
+	
+	a_info->freeSpace = satMsgLenRx - ap->i.headerSize - sizeof(crc16_t);
+	a_info->maxDataOneSeg = a_info->freeSpace - ap->i.segHeaderSize;
+	a_info->maxDataOneFrag = a_info->freeSpace - ap->i.fragHeaderSize;
+	
+	if(a_info->freeSpace      <= 0 ||
+	   a_info->maxDataOneSeg  <= 0 ||
+	   a_info->maxDataOneFrag <= 0)
+	{
+		return -EINVAL;
+	}
+
+	a_info->airMode = airMode;
+	a_info->minDataToBeOneFrag = a_info->maxDataOneFrag - MIN_FRAGMENT_SIZE;
+	a_info->minDataToBeOneSeg = a_info->maxDataOneSeg - MIN_FRAGMENT_SIZE;
+	a_info->satMsgLenRx = satMsgLenRx;
+
+	hsModem_dbg(1, "satMsgLenRx = %u\n", satMsgLenRx);
+	ctx->satMsgRx = kmalloc(satMsgLenRx, GFP_KERNEL);
+
+	if(!ctx->satMsgRx) {
+		return -ENOMEM;
+	}
+	
+	return 0;
+}
+
+int __must_check init_air_protocol_tx ( airContext_t* ctx,
+					satHeaderTypes_t airMode,
+					uint16_t satMsgLenTx)
+{
+
+	airProtCtx_t* ap = apctx[airMode];
+	airMsgInfo_t* a_info;
+	
+	if(!ctx) {
+		return -EINVAL;
+	}
+	if(!ap) {
+		return -EUNATCH;
+	}
+	
+	ctx->ap = ap;
+	a_info = &(ctx->a_info);
+	
+	a_info->freeSpace = satMsgLenTx - ap->i.headerSize - sizeof(crc16_t);
+	a_info->maxDataOneSeg = a_info->freeSpace - ap->i.segHeaderSize;
+	a_info->maxDataOneFrag = a_info->freeSpace - ap->i.fragHeaderSize;
+	
+	if(a_info->freeSpace      <= 0 ||
+	   a_info->maxDataOneSeg  <= 0 ||
+	   a_info->maxDataOneFrag <= 0)
+	{
+		return -EINVAL;
+	}
+
+	a_info->airMode = airMode;
+	a_info->satMsgLenTx = satMsgLenTx;
+	a_info->minDataToBeOneFrag = a_info->maxDataOneFrag - MIN_FRAGMENT_SIZE;
+	a_info->minDataToBeOneSeg = a_info->maxDataOneSeg - MIN_FRAGMENT_SIZE;
+	
+	hsModem_dbg(1, "satMsgLenTx = %u\n", satMsgLenTx);
+	ctx->satMsgTx = kmalloc(satMsgLenTx, GFP_KERNEL);
+	if(!ctx->satMsgTx) {
+		return -ENOMEM;
+	}
+
+	return 0;
+}
+
 
 void destroy_air_protocol(airContext_t* ctx)
 {
@@ -111,6 +205,24 @@ void destroy_air_protocol(airContext_t* ctx)
 	{
 		kfree(ctx->satMsgRx);
 		ctx->satMsgRx = NULL;
+	}
+}
+
+void destroy_air_protocol_rx(airContext_t* ctx)
+{
+	if(ctx->satMsgRx)
+	{
+		kfree(ctx->satMsgRx);
+		ctx->satMsgRx = NULL;
+	}
+}
+
+void destroy_air_protocol_tx(airContext_t* ctx)
+{
+	if(ctx->satMsgTx)
+	{
+		kfree(ctx->satMsgTx);
+		ctx->satMsgTx = NULL;
 	}
 }
 

@@ -57,9 +57,10 @@ int set_wfSettings(config_param_info_t *infoPtr, const char *settings);
 
 static param_tag_t WiFiPasswdTag = { "wifip", "<p>", "</p>"};
 static param_tag_t ssidTag = { "ssid", "<s>", "</s>"};
-static param_tag_t satIdxTag = { "sati", "<sati>", "</sati>"};
+static param_tag_t satIdxTag = { "sati", "<i>", "</i>"};
 //static param_tag_t serviceIdTag = { "servid", "<servid>", "</servid>"};
-static param_tag_t bleAddrTag = { "ble", "<ble>", "</ble>"};
+static param_tag_t bleAddrTag = { "ble", "<b>", "</b>"};
+static param_tag_t servIdTag = { "servid", "<v>", "</v>"};
 static param_tag_t gpsLatTag = { "gpslat", "<gpslat>", "</gpslat>"};
 static param_tag_t gpsLongTag = { "gpslong", "<gpslong>", "</gpslong>"};
 static param_tag_t gpsAltTag = { "gpsalt", "<gpsalt>", "</gpsalt>"};
@@ -78,6 +79,7 @@ static config_param_info_t paramTable[] = {
     { "gpslat",       CONFIG_MTD_DEV_1,         BLOBB,       (char*)RAM_ADDR,    set_param,       &gpsLatTag,     INTERNAL_BUFFER_SIZE},
     { "gpslong",      CONFIG_MTD_DEV_1,         BLOBB,       (char*)RAM_ADDR,    set_param,       &gpsLongTag,    INTERNAL_BUFFER_SIZE},
     { "gpsalt",       CONFIG_MTD_DEV_1,         BLOBB,       (char*)RAM_ADDR,    set_param,       &gpsAltTag,     INTERNAL_BUFFER_SIZE},
+    { "servid",       CONFIG_MTD_DEV_1,         BLOBB,       (char*)RAM_ADDR,    set_param,       &servIdTag,     INTERNAL_BUFFER_SIZE},
 
 };
 
@@ -338,6 +340,20 @@ int set_param(config_param_info_t *infoPtr, const char *val)
     return 0;
 } 
 
+
+void print_usage(void)
+{
+    int index = 0;
+	printf("hsconf - Non Volatile configuration settings managemnet sub-system.\nUsage:\n");
+    printf("hsconf set key=value - set `key' to `value' and store in configuration settings\n");
+    printf("hsconf print key     - print value of `key' from configuration settings\n");
+    printf("hsconf delete key    - Remove `key' from configuration settings\n");
+    printf("Supported Keys - \n");
+    for(index = 0;index < sizeof(paramTable)/sizeof(paramTable[0]);index++){
+        printf("\t%s\n", paramTable[index].paramName);
+    }
+}
+
 int main(int argc, char *const argv[])
 {
     int index = 0;
@@ -347,13 +363,15 @@ int main(int argc, char *const argv[])
     char *valPtr = NULL;
     const int keyValPairIdx = 2;
 
-    if (argc <= 1) {
+    if (argc < 3) {
+	    print_usage();
 	    return -1;
     }
 
     if(argv[keyValPairIdx] == NULL){
         // printf needs replacement using correct print function of uboot.
         printf("Invalid arguments\n");
+	    print_usage();
         return -1;
     }
 
@@ -373,6 +391,12 @@ int main(int argc, char *const argv[])
 
         // Get a pointer to "=" location in the key Value pair. Format is Key=Value.
         valPtr = strstr(keyValPairPtr, "=");
+
+        if(!valPtr){
+            // No '=' found
+            print_usage();
+            return -1;
+        }
         valPtr = (valPtr != 0) ? (valPtr+1) : NULL; // Make the pointer to point after "="
 
         // Truncate the Key string
@@ -400,6 +424,7 @@ int main(int argc, char *const argv[])
     }
 
     printf("Invalid arguments\n");
+    print_usage();
 
     return 0;
 }
