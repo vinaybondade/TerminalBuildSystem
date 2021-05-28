@@ -1,0 +1,1 @@
+cmd_/home/vinay/Workspace/TerminalBuildSystem/apps/hs-modem-ku/lowrate.o := /home/vinay/Workspace/TerminalBuildSystem/apps/hs-modem-ku/../../3rdparty/sauboard/buildroot-bins-sauboard/host/bin/arm-linux-gnueabihf-ld -EL    -r -o /home/vinay/Workspace/TerminalBuildSystem/apps/hs-modem-ku/lowrate.o /home/vinay/Workspace/TerminalBuildSystem/apps/hs-modem-ku/src/low_rate.o 

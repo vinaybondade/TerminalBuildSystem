@@ -3,9 +3,9 @@ prj=$(PWD)
 endif
 
 is_dev_ok=1
-devs="zedboard"
+devs="zedboard sauboard"
 
-ifneq ($(dev),$(filter $(dev), zedboard x86_64))
+ifneq ($(dev),$(filter $(dev), zedboard sauboard x86_64))
 	is_dev_ok=0
 endif
 
@@ -16,7 +16,22 @@ endif
 bb_bins=$(prj)/3rdparty/$(dev)/buildroot-bins-$(dev)
 staging=$(bb_bins)/staging
 
+
+ifeq ($(dev),x86_64)
+cross=
+host=x86_64
+arch=x86_64
+kern_ver=4.9.0-3-amd64
+kern_dir=/usr/src/linux
+kern_defconfig=
+apps=hub_pp
+else
+# Choose the config file depending on the build.
 ifeq ($(dev),zedboard)
+dtb=avnet-zynq-zed.dtb
+else ifeq ($(dev),sauboard)
+dtb=avnet-zynq-sau.dtb
+endif
 cross=$(prj)/3rdparty/$(dev)/toolchain/gcc-arm-linux-gnueabi/bin/arm-linux-gnueabihf-
 cross_bare=$(prj)/3rdparty/$(dev)/toolchain/gcc-arm-none-eabi/bin/arm-none-eabi-
 host=arm-linux
@@ -24,10 +39,10 @@ arch=arm
 kern_ver=4.9.0
 kern_dir=$(prj)/3rdparty/$(dev)/kernel/xlnx-4.9.0
 bootloader_dir=$(prj)/3rdparty/$(dev)/bootloader
-kern_defconfig=avnet-zedboard_defconfig
 uboot_dir=$(prj)/3rdparty/$(dev)/bootloader/u-boot-plnx
-uboot_defconfig=avnet-zedboard_uboot_defconfig
-dtb=avnet-zynq-zed.dtb
+uboot_defconfig=avnet-$(dev)_uboot_defconfig
+buildroot_defconfig=$(dev)-buildroot-defconfig
+kern_defconfig=avnet-$(dev)_defconfig
 #apps=ble-test
 uimage_loadaddr=0x8000
 
@@ -52,16 +67,6 @@ install_fsbl:
 
 endif
 
-ifeq ($(dev),x86_64)
-cross=
-host=x86_64
-arch=x86_64
-kern_ver=4.9.0-3-amd64
-kern_dir=/usr/src/linux
-kern_defconfig=
-apps=hub_pp
-endif
-
 all:
 
 test_env:
@@ -76,7 +81,7 @@ get_bins:
 	$(prj)/scripts/get_bins.sh $(dev)
 
 buildroot:	test_env
-	make O=$(prj)/3rdparty/$(dev)/buildroot-output LINUX_DIR=$(kern_dir) LINUX_VERSION=$(kern_ver) -C $(prj)/3rdparty/buildroot-src defconfig BR2_DEFCONFIG=$(prj)/3rdparty/$(dev)/configs/$(dev)-buildroot-defconfig
+	make O=$(prj)/3rdparty/$(dev)/buildroot-output LINUX_DIR=$(kern_dir) LINUX_VERSION=$(kern_ver) -C $(prj)/3rdparty/buildroot-src defconfig BR2_DEFCONFIG=$(prj)/3rdparty/$(dev)/configs/$(buildroot_defconfig)
 	@if [ $$? -ne 0 ]; \
 		then \
 		echo "Buildroot config failed!"; \
@@ -131,7 +136,7 @@ distclean_buildroot:
 	fi
 
 buildroot_config:	test_env
-	make O=$(prj)/3rdparty/$(dev)/buildroot-output LINUX_DIR=$(kern_dir) LINUX_VERSION=$(kern_ver) -C $(prj)/3rdparty/buildroot-src defconfig BR2_DEFCONFIG=$(prj)/3rdparty/$(dev)/configs/$(dev)-buildroot-defconfig
+	make O=$(prj)/3rdparty/$(dev)/buildroot-output LINUX_DIR=$(kern_dir) LINUX_VERSION=$(kern_ver) -C $(prj)/3rdparty/buildroot-src defconfig BR2_DEFCONFIG=$(prj)/3rdparty/$(dev)/configs/$(buildroot_defconfig)
 	@if [ $$? -ne 0 ]; \
 		then \
 		echo "Buildroot config failed!"; \
@@ -335,6 +340,10 @@ u-boot:
 
 rootfs:
 	$(prj)/3rdparty/$(dev)/create_img.sh $(dev) create_rootfs_image;
+ifneq ($(dev),zedboard)
+	mv $(prj)/3rdparty/$(dev)/images/$(dev)-ramdisk.img $(prj)/3rdparty/$(dev)/images/zedboard-ramdisk.img
+	mv $(prj)/3rdparty/$(dev)/images/$(dev)-ramdisk.md5 $(prj)/3rdparty/$(dev)/images/zedboard-ramdisk.md5
+endif
 
 clean_rootfs:	
 	if [ -f "$(prj)/3rdparty/$(dev)/images/zedboard-ramdisk.img" ]; then \

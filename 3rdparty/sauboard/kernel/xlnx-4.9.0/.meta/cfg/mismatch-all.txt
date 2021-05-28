@@ -1,0 +1,91 @@
+Config: CONFIG_LOCALVERSION
+From: /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/defconfig
+Requested value:  CONFIG_LOCALVERSION="-xilinx"
+Actual value:     CONFIG_LOCALVERSION="-xilinx-v2017.4"
+
+Config: CONFIG_MTD
+From: /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/defconfig /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/plnx_kernel.cfg /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/plnx_kernel.cfg
+Requested value:  CONFIG_MTD=y
+CONFIG_MTD=y
+Actual value:     CONFIG_MTD=y
+
+Config: CONFIG_MTD_OF_PARTS
+From: /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/plnx_kernel.cfg /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/plnx_kernel.cfg
+Requested value:  CONFIG_MTD_OF_PARTS=y
+CONFIG_MTD_OF_PARTS=y
+Actual value:     CONFIG_MTD_OF_PARTS=y
+
+Config: CONFIG_SERIAL_OF_PLATFORM
+From: /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/plnx_kernel.cfg /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/plnx_kernel.cfg
+Requested value:  CONFIG_SERIAL_OF_PLATFORM=y
+CONFIG_SERIAL_OF_PLATFORM=y
+Actual value:     
+
+Config: CONFIG_MMC_SDHCI_OF_XILINX_PS
+From: /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/plnx_kernel.cfg
+Requested value:  CONFIG_MMC_SDHCI_OF_XILINX_PS=y
+Actual value:     
+
+Config: CONFIG_MTD
+From: /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/defconfig /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/plnx_kernel.cfg /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/plnx_kernel.cfg
+Requested value:  CONFIG_MTD=y
+CONFIG_MTD=y
+Actual value:     CONFIG_MTD=y
+
+Config: CONFIG_MTD_OF_PARTS
+From: /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/plnx_kernel.cfg /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/plnx_kernel.cfg
+Requested value:  CONFIG_MTD_OF_PARTS=y
+CONFIG_MTD_OF_PARTS=y
+Actual value:     CONFIG_MTD_OF_PARTS=y
+
+Config: CONFIG_SERIAL_OF_PLATFORM
+From: /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/plnx_kernel.cfg /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/plnx_kernel.cfg
+Requested value:  CONFIG_SERIAL_OF_PLATFORM=y
+CONFIG_SERIAL_OF_PLATFORM=y
+Actual value:     
+
+Config: CONFIG_SPI_XILINX_PS_QSPI
+From: /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/plnx_kernel.cfg
+Requested value:  CONFIG_SPI_XILINX_PS_QSPI=y
+Actual value:     
+
+Config: CONFIG_USB_EHCI_XUSBPS
+From: /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/plnx_kernel.cfg
+Requested value:  CONFIG_USB_EHCI_XUSBPS=y
+Actual value:     
+
+Config: CONFIG_USB_XUSBP
+From: /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/plnx_kernel.cfg
+Requested value:  CONFIG_USB_XUSBP=y
+Actual value:     
+
+Config: CONFIG_USB_XUSBPS_DR_OF
+From: /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/plnx_kernel.cfg
+Requested value:  CONFIG_USB_XUSBPS_DR_OF=y
+Actual value:     
+
+Config: CONFIG_USB_XUSBPS_OTG
+From: /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/plnx_kernel.cfg
+Requested value:  CONFIG_USB_XUSBPS_OTG=y
+Actual value:     
+
+Config: CONFIG_USB_SUSPEND
+From: /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/bsp.cfg
+Requested value:  CONFIG_USB_SUSPEND=y
+Actual value:     
+
+Config: CONFIG_USB_GADGET_XUSBPS
+From: /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/plnx_kernel.cfg /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/bsp.cfg
+Requested value:  CONFIG_USB_GADGET_XUSBPS=y
+Actual value:     
+
+Config: CONFIG_XILINX_ZED_USB_OTG
+From: /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/bsp.cfg
+Requested value:  CONFIG_XILINX_ZED_USB_OTG=y
+Actual value:     
+
+Config: CONFIG_USB_ETH_RNDIS
+From: /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/bsp.cfg
+Requested value:  # CONFIG_USB_ETH_RNDIS is not set
+Actual value:     
+

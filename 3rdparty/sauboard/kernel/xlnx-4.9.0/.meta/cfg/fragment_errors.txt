@@ -1,0 +1,12 @@
+Warning: Value of CONFIG_MTD is defined multiple times within fragment /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/plnx_kernel.cfg:
+CONFIG_MTD=y
+CONFIG_MTD=y
+
+Warning: Value of CONFIG_MTD_OF_PARTS is defined multiple times within fragment /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/plnx_kernel.cfg:
+CONFIG_MTD_OF_PARTS=y
+CONFIG_MTD_OF_PARTS=y
+
+Warning: Value of CONFIG_SERIAL_OF_PLATFORM is defined multiple times within fragment /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/plnx_kernel.cfg:
+CONFIG_SERIAL_OF_PLATFORM=y
+CONFIG_SERIAL_OF_PLATFORM=y
+

@@ -1,0 +1,20 @@
+/ {
+	hisky_modem_pl: hisky_modem_pl@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "simple-bus";
+		ranges ;
+
+		hs_modem: hs_modem@43c40000 {
+			#interrupt-cells = <2>;
+			compatible = "hisky,hs-modem-1.0";
+			reg = <0x43c40000 0x10000>;
+			
+			interrupt-parent = <&intc>;
+			//              Rx        Tx
+			interrupts = <0 29 1>, <0 30 1>;
+			hisky,tx-fifo-depth = <0x200>;
+			hisky,rx-fifo-depth = <0x200>;
+		};
+	};
+};
