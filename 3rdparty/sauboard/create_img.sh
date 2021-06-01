@@ -96,8 +96,8 @@ create_rootfs_md5()
 	echo "creating rootfs"
 	prepare_rootfs
 	create_image
-	md5_ramdsk=($(md5sum $currdir/images/zedboard-ramdisk.img))
-	echo $md5_ramdsk > $currdir/images/zedboard-ramdisk.md5
+	md5_ramdsk=($(md5sum $currdir/images/$dev-ramdisk.img))
+	echo $md5_ramdsk > $currdir/images/$dev-ramdisk.md5
 }
 
 if [ "$2" ]; then

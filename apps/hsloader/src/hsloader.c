@@ -12,6 +12,12 @@
 #define SW_UPDATE_R2	0xdeadbeef
 #define SW_UPDATE_APP	0xfaacabba
 
+#if defined (sauboard)
+#define EXE_PATH    "/opt/sauboard/bin/"
+#else
+#define EXE_PATH    "/opt/zedboard/bin/"
+#endif
+
 int main(int argc, char * argv[])
 {
     //int res = 0;
@@ -42,21 +48,23 @@ int main(int argc, char * argv[])
 
     close(fd);
 
+    printf("EXE Path - %s.\n", EXE_PATH);
+
     if (app_value == SW_UPDATE_APP ||
 	fsbl_value == SW_UPDATE_R1 ||
 	fsbl_value == SW_UPDATE_R2) {
 
-	system ("/opt/zedboard/bin/swu.elf &");
+	system (EXE_PATH"swu.elf &");
     }
     else {
 
-	system ("/opt/zedboard/bin/hs_udp_service &");
+	system (EXE_PATH"hs_udp_service &");
 	//system ("/opt/zedboard/bin/ble-service -i 127.0.0.1 -t 10000000 &");
 	system ("/etc/hs-ble-service.sh");
-	system ("/opt/zedboard/bin/terminal_app &");
+	system (EXE_PATH"terminal_app &");
 	usleep(1000000);
 
-	system ("/opt/zedboard/bin/hsModem.elf -i -a -f -c 7 &"); //-i -m -a &
+	system (EXE_PATH"hsModem.elf -i -a -f -c 7 &"); //-i -m -a &
     }
 
     /////////////////////////////////////////////////////////
