@@ -149,4 +149,6 @@ int cdmaZyncToMicroBlaze(srec_info_t* srinfo)
 		xil_printf("Error with cdmaZyncToMicroBlaze function\r\n");
 		return XST_FAILURE;
 	}
+	
+	return XST_SUCCESS;
 }

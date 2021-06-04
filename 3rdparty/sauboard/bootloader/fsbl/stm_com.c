@@ -157,7 +157,7 @@ int stm_status_req(uint32_t uartBaseAddr, uint8_t *status0, uint8_t *status1)
 	size_t offset = 0;
 	msg_t rxMsg = {0};
 	uint8_t buf[sizeof(rxMsg)] = {0};
-	int timeout = 50;
+	int timeout = 200; // 118 Platform needs more time for loading the fpga.bin
 
 	msg_t txMsg = {
 			.preamble = STM_PREAMBLE,
