@@ -1,0 +1,58 @@
+Boot Header@20
+  Width Detection: 0xaa995566
+  Image Identification: 0x584c4e58
+  Encryption Status: 0x0
+  User Defined: 0x1010000
+  Source Offset: 0x1700
+  Length of Image: 0x1c008
+  Reserved0: 0x0
+  Start of Execution: 0x0
+  Total Image Length: 0x1c008
+  Reserved1: 0x1
+  Header Checksum: 0xfc15c530
+
+	Image Header Table@8c0
+	  Version: 0x1020000
+	  Count of Image Headers: 0x2
+	  Word Offset to Partition Header: 0x320
+	  Word Offset to First Image Header: 0x240
+	  Word Offset to header authentication: 0x0
+
+		Image Header@900
+		  Word Offset to Next Image Header: 0x250
+		  Word Offset to First Partition Header: 0x320
+		  Partition Count: 0x0
+		  Image Name Length: 0x1
+		  Image Name: zynq_fsbl.elf
+			Partition Header@c80
+			  Partition Data Word Length: 0x7002
+			  Extracted Data Word Length: 0x7002
+			  Total Partition Word Length: 0x7002
+			  Destination Load Address: 0x0
+			  Destination Execution Address: 0x0
+			  Data Word Offset in Image: 0x5c0
+			  Attribute Bits: 0x10
+			  Section Count: 0x1
+			  Checksum Word Offset: 0x0
+			  Image Header Word Offset: 0x240
+			  Authentication Certification Word Offset: 0x0
+
+		Image Header@940
+		  Word Offset to Next Image Header: 0x0
+		  Word Offset to First Partition Header: 0x330
+		  Partition Count: 0x0
+		  Image Name Length: 0x1
+		  Image Name: u-boot.elf
+			Partition Header@cc0
+			  Partition Data Word Length: 0x227d2
+			  Extracted Data Word Length: 0x227d2
+			  Total Partition Word Length: 0x227d2
+			  Destination Load Address: 0x400000
+			  Destination Execution Address: 0x400000
+			  Data Word Offset in Image: 0x40000
+			  Attribute Bits: 0x12
+			  Section Count: 0x1
+			  Checksum Word Offset: 0x0
+			  Image Header Word Offset: 0x250
+			  Authentication Certification Word Offset: 0x0
+

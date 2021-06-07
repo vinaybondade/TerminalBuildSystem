@@ -6,8 +6,8 @@ lowrate-objs := src/low_rate.o
 
 hsfifo-objs := src/hs-fifo.o
 
-kern_dir := $(CURDIR)/../../3rdparty/zedboard/kernel/xlnx-4.9.0
-cross := $(CURDIR)/../../3rdparty/zedboard/buildroot-bins-zedboard/host/bin/arm-linux-gnueabihf-
+kern_dir := $(CURDIR)/../../3rdparty/$(dev)/kernel/xlnx-4.9.0
+cross := $(CURDIR)/../../3rdparty/$(dev)/buildroot-bins-$(dev)/host/bin/arm-linux-gnueabihf-
 install_dir := ./bin
 EXTRA_CFLAGS=-I$(PWD)/include
 

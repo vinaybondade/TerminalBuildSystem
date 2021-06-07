@@ -1,0 +1,1 @@
+./petalinux-v2017/tools/hsm/bin/program_flash -f avnet-digilent-zedboard-2017.4/pre-built/linux/images/BOOT.BIN -fsbl avnet-digilent-zedboard-2017.4/pre-built/linux/images/zynq_fsbl.elf -flash_type qspi_single -blank_check -verify -cable type xilinx_tcf url TCP:localhost:3121

@@ -1,0 +1,5 @@
+/home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs//./openamp.cfg
+/home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs//./defconfig
+/home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs//./openamp.cfg
+/home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs//./plnx_kernel.cfg
+/home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs//./bsp.cfg

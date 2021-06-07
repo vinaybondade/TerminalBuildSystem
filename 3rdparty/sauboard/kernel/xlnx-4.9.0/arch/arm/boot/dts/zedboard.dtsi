@@ -1,0 +1,43 @@
+/ {
+	compatible = "xlnx,zynq-7000";
+};
+
+&clkc {
+	ps-clk-frequency = <40000000>;
+};
+
+&qspi {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	flash0: flash@0 {
+		compatible = "n25q512a","micron,m25p80";
+		reg = <0x0>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		spi-max-frequency = <50000000>;
+		/delete-node/ partition@qspi-blob-a;
+		/delete-node/ partition@qspi-blob-b;
+		/delete-node/ partition@qspi-blob-c;
+		partition@E20000 {
+			label = "blob-a";
+			reg = <0xE20000 0x00020000>;
+		};
+		partition@E40000 {
+			label = "blob-b";
+			reg = <0xE40000 0x00040000>;
+		};
+		partition@E80000 {
+			label = "blob-c";
+			reg = <0xE80000 0x00040000>;
+		};
+	};
+};
+
+
+&uart0 {
+	status = "okay";
+};
+
+&uart1 {
+	status = "okay";
+};

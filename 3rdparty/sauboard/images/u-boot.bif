@@ -1,0 +1,4 @@
+the_ROM_image:
+{
+	[checksum=md5,load=0x400000,startup=0x400000] /home/vinay/Workspace/TerminalBuildSystem/3rdparty/sauboard/images/u-boot.elf
+}

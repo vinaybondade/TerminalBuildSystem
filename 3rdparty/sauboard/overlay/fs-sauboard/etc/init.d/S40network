@@ -1,0 +1,41 @@
+#!/bin/sh
+#
+# Start the network....
+#
+# Debian ifupdown needs the /run/network lock directory
+mkdir -p /run/network
+
+case "$1" in
+  start)
+        printf "Starting network: "
+        ifconfig | grep "192.168.0.1"
+        is_ready=$?
+	num_tries=0
+
+        while [ $is_ready -ne 0 ] && [ $num_tries -le 20 ]
+        do
+		sleep 0.1
+                /sbin/ifup -a
+                ifconfig | grep "192.168.0.1"
+                is_ready=$?
+		num_tries=$((num_tries+1))
+        done
+        [ $? = 0 ] && echo "S40network OK" || echo "S40network FAIL"
+	ifconfig wlan0 multicast
+	route -n add -net 224.0.0.0 netmask 240.0.0.0 dev wlan0
+        ;;
+  stop)
+        printf "Stopping network: "
+        /sbin/ifdown -a
+        [ $? = 0 ] && echo "OK" || echo "FAIL"
+        ;;
+  restart|reload)
+        "$0" stop
+        "$0" start
+        ;;
+  *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+esac
+
+exit $?

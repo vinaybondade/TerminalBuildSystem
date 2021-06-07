@@ -1,0 +1,20 @@
+Using /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/openamp.cfg as base
+Merging /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/defconfig
+Value of CONFIG_UIO_PDRV_GENIRQ is redefined by fragment /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/defconfig:
+Previous value: CONFIG_UIO_PDRV_GENIRQ=m
+New value: CONFIG_UIO_PDRV_GENIRQ=y
+
+Merging /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/openamp.cfg
+Value of CONFIG_UIO_PDRV_GENIRQ is redefined by fragment /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/openamp.cfg:
+Previous value: CONFIG_UIO_PDRV_GENIRQ=y
+New value: CONFIG_UIO_PDRV_GENIRQ=m
+
+Merging /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/plnx_kernel.cfg
+Value of CONFIG_MTD is redefined by fragment /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/plnx_kernel.cfg:
+Previous value: CONFIG_MTD=y
+New value: CONFIG_MTD=y CONFIG_MTD=y
+
+Merging /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.kernel-meta/configs/bsp.cfg
+#
+# merged configuration written to /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work-shared/plnx_arm/kernel-source/.meta/cfg/.config (needs make)
+#

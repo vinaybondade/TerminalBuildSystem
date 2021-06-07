@@ -1,0 +1,1 @@
+1. source /home/yan/source/hiSky/tools/petalinux-v2015.2.1-final/settings.sh
