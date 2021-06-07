@@ -629,6 +629,9 @@ int main(int argc, char *const argv[])
         return -1;
     }
 
+    setuid(0);
+    setgid(0);
+
     keyValPairPtr = (char *)calloc(strlen(argv[keyValPairIdx]), sizeof(char));
     if(keyValPairPtr == NULL){
         // printf needs replacement using correct print function of uboot.

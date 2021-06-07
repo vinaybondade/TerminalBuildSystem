@@ -1,0 +1,20 @@
+#!/bin/sh
+case "$1" in
+  start)
+	chown root.root /opt/zedboard/bin/hsconf
+	chmod g+s /opt/zedboard/bin/hsconf
+	chmod u+s /opt/zedboard/bin/hsconf
+        ;;
+  stop)
+        printf "Use Kill Application with pid"
+        ;;
+  restart|reload)
+        "$0" stop
+        "$0" start
+        ;;
+  *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+esac
+
+exit $?
