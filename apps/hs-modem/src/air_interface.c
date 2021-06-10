@@ -35,7 +35,7 @@ int is_air_msg_valid(airContext_t* ctx)
 
 	calcCrc = crcSlow(satMsg, ctx->a_info.satMsgLenRx - sizeof(crc16_t));
 	recCrc = (crc16_t*)(satMsg + ctx->a_info.satMsgLenRx - sizeof(crc16_t));
-	hsModem_dbg(5, "0x%x, 0x%x\n", (uint16_t)calcCrc, (uint16_t)*recCrc);
+	// hsModem_dbg(5, "0x%x, 0x%x\n", (uint16_t)calcCrc, (uint16_t)*recCrc);
 	return (calcCrc == (*recCrc));
 }	
 
@@ -354,6 +354,13 @@ int air_msg_build(airContext_t* ctx, uint8_t modemEbN0data6bit)
 
 	func->init_header(satMsg, ctx->mtID, modemEbN0data6bit, satMsgSeqNum++);
 	
+	hsModem_dbg(9, "TX INT userMsg len %x msgType %x seqNum %x fragFlag %x reIndx %x fragSec %x\n",	userMsg->len,
+																	userMsg->msgType,
+																	userMsg->seqNum,
+																	userMsg->fragFlag,
+																	userMsg->reIndx,
+																	userMsg->fragSec);
+
 	/*************************************************************************
 	 * A case in which a current message is a continuation fragment          *
 	 * of a previous fragment.                                               *
