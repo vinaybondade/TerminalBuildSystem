@@ -27,6 +27,7 @@
 #include "generalDef.h"
 #include "sysfs_macro.h"
 #include "air_interface.h"
+#include "low_rate.h"
 
 /* ----------------------------------------------
  * module command-line arguments and information
@@ -79,6 +80,9 @@ static void conv_ebn0(struct ebn0_t* ebn0, uint32_t regVal);
 static uint32_t ts_to_ticks(uint32_t ts);
 static void select_rx_fifo(struct hsModem_t *hsModem);
 static void select_tx_fifo(struct hsModem_t *hsModem);
+static void update_service_counters(struct hsModem_t* hsModem, linkDir_t dir);
+static void init_service_counters(struct hsModem_t* hsModem);
+
 /* ----------------------------
  *           globals
  * ----------------------------
@@ -241,70 +245,93 @@ static ssize_t sysfs_stat_read(struct device *dev, char *buf,
 				modem_sysfs_stat_t stat)
 {
 	hsModem_t *hsModem = dev_get_drvdata(dev);
-	char tmpBuf[32] = {0};
+	char tmpBuf[128] = {0};
 	size_t len;
-	uint32_t val;
+	uint32_t val = 0;
+
+	if(hsModem == NULL)
+	{
+		printk (KERN_WARNING "sysfs_stat_read NULL\n");
+
+		return -EINVAL;
+	}
+
+	printk (KERN_WARNING "sysfs_stat_read stat %d\n",  stat);
 
 	switch(stat)
 	{
-	case SYSFS_STAT_TX_IRQ:
-		val = hsModem->stat.txIrqCnt;
-		break;
-	case SYSFS_STAT_RX_CRC_ERR:
-		val = hsModem->stat.rxCrcErrCnt;
-		break;
-	case SYSFS_STAT_RX_GOOD_PCK:
-		val = hsModem->stat.rxGoodPckCnt;
-		break;
-	case SYSFS_STAT_RX_TOTAL_PCK:
-		val = hsModem->stat.rxCrcErrCnt + hsModem->stat.rxGoodPckCnt;
-		break;
-	case SYSFS_STAT_RX_TIMESLOT:
-		val = hsModem->stat.rxTsCnt;
-		break;
-	case SYSFS_STAT_RX_PCK_DROPPED:
-		val = hsModem->stat.apStat.rxMsgDropped;
-		break;
-	// case SYSFS_STAT_ADMIN_SRV_TX_NUM_OF_BYTES:
-	// 	val = hsModem->stat.apStat.srvStat[LINK_DIR_TX][TERM_SERVICE_CORE_ADMIN].numOfBytes;
-	// 	break;
-	// case SYSFS_STAT_ADMIN_SRV_TX_NUM_OF_FULL_FREG:
-	// 	val = hsModem->stat.apStat.srvStat[LINK_DIR_TX][TERM_SERVICE_CORE_ADMIN].numOfFullSeg;
-	// 	break;
-	// case SYSFS_STAT_ADMIN_SRV_TX_NUM_OF_PART_FREG:
-	// 	val = hsModem->stat.apStat.srvStat[LINK_DIR_TX][TERM_SERVICE_CORE_ADMIN].numOfPartialSeg;
-	// 	break;
-	// case SYSFS_STAT_ADMIN_SRV_RX_NUM_OF_BYTES:
-	// 	val = hsModem->stat.apStat.srvStat[LINK_DIR_RX][TERM_SERVICE_CORE_ADMIN].numOfBytes;
-	// 	break;
-	// case SYSFS_STAT_ADMIN_SRV_RX_NUM_OF_FULL_FREG:
-	// 	val = hsModem->stat.apStat.srvStat[LINK_DIR_RX][TERM_SERVICE_CORE_ADMIN].numOfFullSeg;
-	// 	break;
-	// case SYSFS_STAT_ADMIN_SRV_RX_NUM_OF_PART_FREG:
-	// 	val = hsModem->stat.apStat.srvStat[LINK_DIR_RX][TERM_SERVICE_CORE_ADMIN].numOfPartialSeg;
-	// 	break;
-	// case SYSFS_STAT_UDP_SRV_TX_NUM_OF_BYTES:
-	// 	val = hsModem->stat.apStat.srvStat[LINK_DIR_TX][TERM_SERVICE_USER_UDP].numOfBytes;
-	// 	break;
-	// case SYSFS_STAT_UDP_SRV_TX_NUM_OF_FULL_FREG:
-	// 	val = hsModem->stat.apStat.srvStat[LINK_DIR_TX][TERM_SERVICE_USER_UDP].numOfFullSeg;
-	// 	break;
-	// case SYSFS_STAT_UDP_SRV_TX_NUM_OF_PART_FREG:
-	// 	val = hsModem->stat.apStat.srvStat[LINK_DIR_TX][TERM_SERVICE_USER_UDP].numOfPartialSeg;
-	// 	break;
-	// case SYSFS_STAT_UDP_SRV_RX_NUM_OF_BYTES:
-	// 	val = hsModem->stat.apStat.srvStat[LINK_DIR_RX][TERM_SERVICE_USER_UDP].numOfBytes;
-	// 	break;
-	// case SYSFS_STAT_UDP_SRV_RX_NUM_OF_FULL_FREG:
-	// 	val = hsModem->stat.apStat.srvStat[LINK_DIR_RX][TERM_SERVICE_USER_UDP].numOfFullSeg;
-	// 	break;
-	// case SYSFS_STAT_UDP_SRV_RX_NUM_OF_PART_FREG:
-	// 	val = hsModem->stat.apStat.srvStat[LINK_DIR_RX][TERM_SERVICE_USER_UDP].numOfPartialSeg;
-	// 	break;
-	default:
-		return -EINVAL;
-		break;
+		case SYSFS_STAT_TX_IRQ:
+			val = hsModem->stat.txIrqCnt;
+			break;
+		case SYSFS_STAT_RX_CRC_ERR:
+			val = hsModem->stat.rxCrcErrCnt;
+			break;
+		case SYSFS_STAT_RX_GOOD_PCK:
+			val = hsModem->stat.rxGoodPckCnt;
+			break;
+		case SYSFS_STAT_RX_TOTAL_PCK:
+			val = hsModem->stat.rxCrcErrCnt + hsModem->stat.rxGoodPckCnt;
+			break;
+		case SYSFS_STAT_RX_TIMESLOT:
+			val = hsModem->stat.rxTsCnt;
+			break;
+		case SYSFS_STAT_RX_PCK_DROPPED:
+			val = hsModem->stat.apStat.rxMsgDropped;
+			break;
+		case SYSFS_STAT_ADMIN_TX_BYTES:
+			val = hsModem->stat.apStat.adminTx.numOfBytes;
+			break;
+		case SYSFS_STAT_ADMIN_TX_SEG:
+			val = hsModem->stat.apStat.adminTx.numOfFullSeg;
+			break;
+		case SYSFS_STAT_ADMIN_TX_PART_SEG:
+			val = hsModem->stat.apStat.adminTx.numOfPartialSeg;
+			break;
+		case SYSFS_STAT_ADMIN_TX_FREG:
+			val = hsModem->stat.apStat.adminTx.numOfFreg;
+			break;
+		case SYSFS_STAT_ADMIN_RX_BYTES:
+			val = hsModem->stat.apStat.adminRx.numOfBytes;
+			break;
+		case SYSFS_STAT_ADMIN_RX_SEG:
+			val = hsModem->stat.apStat.adminRx.numOfFullSeg;
+			break;
+		case SYSFS_STAT_ADMIN_RX_PART_SEG:
+			val = hsModem->stat.apStat.adminRx.numOfPartialSeg;
+			break;
+		case SYSFS_STAT_ADMIN_RX_FREG:
+			val = hsModem->stat.apStat.adminRx.numOfFreg;
+			break;
+		case SYSFS_STAT_UDP_TX_BYTES:
+			val = hsModem->stat.apStat.udpTx.numOfBytes;
+			break;
+		case SYSFS_STAT_UDP_TX_SEG:
+			val = hsModem->stat.apStat.udpTx.numOfFullSeg;
+			break;
+		case SYSFS_STAT_UDP_TX_PART_SEG:
+			val = hsModem->stat.apStat.udpTx.numOfPartialSeg;
+			break;
+		case SYSFS_STAT_UDP_TX_FREG:
+			val = hsModem->stat.apStat.udpTx.numOfFreg;
+			break;
+		case SYSFS_STAT_UDP_RX_BYTES:
+			val = hsModem->stat.apStat.udpRx.numOfBytes;
+			break;
+		case SYSFS_STAT_UDP_RX_SEG:
+			val = hsModem->stat.apStat.udpRx.numOfFullSeg;
+			break;
+		case SYSFS_STAT_UDP_RX_PART_SEG:
+			val = hsModem->stat.apStat.udpRx.numOfPartialSeg;
+			break;
+		case SYSFS_STAT_UDP_RX_FREG:
+			val = hsModem->stat.apStat.udpRx.numOfFreg;
+			break;
+		default:
+			return -EINVAL;
+			break;
 	}
+
+	printk (KERN_WARNING "sysfs_stat_read val %d\n",  val);
 
 	len = snprintf(tmpBuf, sizeof(tmpBuf), "%d\n", val);
 	memcpy(buf, tmpBuf, len);
@@ -331,37 +358,40 @@ static struct attribute *hsModem_attrs_stat[] = {
 	NULL,
 };
 
-DEFINE_RO_STAT_ATTR_AND_FUNC(tx_bytes_admin, SYSFS_STAT_ADMIN_TX_BYTES);
-DEFINE_RO_STAT_ATTR_AND_FUNC(tx_freg_admin, SYSFS_STAT_ADMIN_TX_FREG);
-DEFINE_RO_STAT_ATTR_AND_FUNC(tx_part_freg_admin, SYSFS_STAT_ADMIN_TX_PART_FREG);
-DEFINE_RO_STAT_ATTR_AND_FUNC(rx_bytes_admin, SYSFS_STAT_ADMIN_RX_BYTES);
-DEFINE_RO_STAT_ATTR_AND_FUNC(rx_freg_admin, SYSFS_STAT_ADMIN_RX_FREG);
-DEFINE_RO_STAT_ATTR_AND_FUNC(rx_part_freg_admin, SYSFS_STAT_ADMIN_RX_PART_FREG);
+DEFINE_RO_STAT_ATTR_AND_FUNC(admin_tx_bytes, SYSFS_STAT_ADMIN_TX_BYTES);
+DEFINE_RO_STAT_ATTR_AND_FUNC(admin_tx_seg, SYSFS_STAT_ADMIN_TX_SEG);
+DEFINE_RO_STAT_ATTR_AND_FUNC(admin_tx_part_seg, SYSFS_STAT_ADMIN_TX_PART_SEG);
+DEFINE_RO_STAT_ATTR_AND_FUNC(admin_tx_freg, SYSFS_STAT_ADMIN_TX_FREG);
+DEFINE_RO_STAT_ATTR_AND_FUNC(admin_rx_bytes, SYSFS_STAT_ADMIN_RX_BYTES);
+DEFINE_RO_STAT_ATTR_AND_FUNC(admin_rx_seg, SYSFS_STAT_ADMIN_RX_SEG);
+DEFINE_RO_STAT_ATTR_AND_FUNC(admin_rx_part_seg, SYSFS_STAT_ADMIN_RX_PART_SEG);
+DEFINE_RO_STAT_ATTR_AND_FUNC(admin_rx_freg, SYSFS_STAT_ADMIN_RX_FREG);
+DEFINE_RO_STAT_ATTR_AND_FUNC(udp_tx_bytes, SYSFS_STAT_UDP_TX_BYTES);
+DEFINE_RO_STAT_ATTR_AND_FUNC(udp_tx_seg, SYSFS_STAT_UDP_TX_SEG);
+DEFINE_RW_STAT_ATTR_AND_FUNC(udp_tx_part_seg, SYSFS_STAT_UDP_TX_PART_SEG);
+DEFINE_RW_STAT_ATTR_AND_FUNC(udp_tx_freg, SYSFS_STAT_UDP_TX_FREG);
+DEFINE_RO_STAT_ATTR_AND_FUNC(udp_rx_bytes, SYSFS_STAT_UDP_RX_BYTES);
+DEFINE_RO_STAT_ATTR_AND_FUNC(udp_rx_seg, SYSFS_STAT_UDP_RX_SEG);
+DEFINE_RO_STAT_ATTR_AND_FUNC(udp_rx_part_seg, SYSFS_STAT_UDP_RX_PART_SEG);
+DEFINE_RO_STAT_ATTR_AND_FUNC(udp_rx_freg, SYSFS_STAT_UDP_RX_FREG);
 
-static struct attribute *hsModem_attrs_stat_admin_service[] = {
-	&DEV_ATTR(tx_bytes_admin).attr,
-	&DEV_ATTR(tx_freg_admin).attr,
-	&DEV_ATTR(tx_part_freg_admin).attr,
-	&DEV_ATTR(rx_bytes_admin).attr,
-	&DEV_ATTR(rx_freg_admin).attr,
-	&DEV_ATTR(rx_part_freg_admin).attr,
-	NULL,
-};
-
-DEFINE_RO_STAT_ATTR_AND_FUNC(tx_bytes_udp, SYSFS_STAT_UDP_TX_BYTES);
-DEFINE_RO_STAT_ATTR_AND_FUNC(tx_freg_udp, SYSFS_STAT_UDP_TX_FREG);
-DEFINE_RW_STAT_ATTR_AND_FUNC(tx_part_freg_udp, SYSFS_STAT_UDP_TX_PART_FREG);
-DEFINE_RO_STAT_ATTR_AND_FUNC(rx_bytes_udp, SYSFS_STAT_UDP_RX_BYTES);
-DEFINE_RO_STAT_ATTR_AND_FUNC(rx_freg_udp, SYSFS_STAT_UDP_RX_FREG);
-DEFINE_RO_STAT_ATTR_AND_FUNC(rx_part_freg_udp, SYSFS_STAT_UDP_RX_PART_FREG);
-
-static struct attribute *hsModem_attrs_stat_udp_service[] = {
-	&DEV_ATTR(tx_bytes_udp).attr,
-	&DEV_ATTR(tx_freg_udp).attr,
-	&DEV_ATTR(tx_part_freg_udp).attr,
-	&DEV_ATTR(rx_bytes_udp).attr,
-	&DEV_ATTR(rx_freg_udp).attr,
-	&DEV_ATTR(rx_part_freg_udp).attr,
+static struct attribute *hsModem_attrs_service[] = {
+	&DEV_ATTR(admin_tx_bytes).attr,
+	&DEV_ATTR(admin_tx_seg).attr,
+	&DEV_ATTR(admin_tx_part_seg).attr,
+	&DEV_ATTR(admin_tx_freg).attr,
+	&DEV_ATTR(admin_rx_bytes).attr,
+	&DEV_ATTR(admin_rx_seg).attr,
+	&DEV_ATTR(admin_rx_part_seg).attr,
+	&DEV_ATTR(admin_rx_freg).attr,
+	&DEV_ATTR(udp_tx_bytes).attr,
+	&DEV_ATTR(udp_tx_seg).attr,
+	&DEV_ATTR(udp_tx_part_seg).attr,
+	&DEV_ATTR(udp_tx_freg).attr,
+	&DEV_ATTR(udp_rx_bytes).attr,
+	&DEV_ATTR(udp_rx_seg).attr,
+	&DEV_ATTR(udp_rx_part_seg).attr,
+	&DEV_ATTR(udp_rx_freg).attr,
 	NULL,
 };
 
@@ -846,10 +876,10 @@ static const struct attribute_group hsModem_attr_group_reg = {
 	.name = "ip_registers",
 	.attrs = hsModem_attrs_reg,
 };
-// static const struct attribute_group hsModem_attr_group_stat = {
-// 	.name = "general",
-// 	.attrs = hsModem_attrs_stat,
-// };
+static const struct attribute_group hsModem_attr_group_stat = {
+	.name = "stat",
+	.attrs = hsModem_attrs_stat,
+};
 static const struct attribute_group hsModem_attr_group_conf = {
 	.name = "conf",
 	.attrs = hsModem_attrs_conf,
@@ -858,33 +888,16 @@ static const struct attribute_group hsModem_attr_group_dbg = {
 	.name = "dbg",
 	.attrs = hsModem_attrs_dbg,
 };
+static const struct attribute_group hsModem_attr_group_service = {
+	.name = "service",
+	.attrs = hsModem_attrs_service,
+};
 static const struct attribute_group *hsModem_attrs_groups[] = {
 	&hsModem_attr_group_reg,
-	// &hsModem_attr_group_stat,
+	&hsModem_attr_group_stat,
 	&hsModem_attr_group_conf,
 	&hsModem_attr_group_dbg,
-	NULL,
-};
-
-static const struct attribute_group hsModem_attr_group_stat_general = {
-	.name = "general",
-	.attrs = hsModem_attrs_stat,
-};
-
-static const struct attribute_group hsModem_attr_group_stat_service_admin = {
-	.name = "admin",
-	.attrs = hsModem_attrs_stat_admin_service,
-};
-
-static const struct attribute_group hsModem_attr_group_stat_service_udp = {
-	.name = "udp",
-	.attrs = hsModem_attrs_stat_udp_service,
-};
-
-static const struct attribute_group *hsModem_attrs_groups_stat[] = {
-	&hsModem_attr_group_stat_general,
-	&hsModem_attr_group_stat_service_admin,
-	&hsModem_attr_group_stat_service_udp,
+	&hsModem_attr_group_service,
 	NULL,
 };
 
@@ -1240,7 +1253,6 @@ static int hsModem_probe(struct platform_device *pdev)
 	struct resource *r_mem; /* IO mem resources */
 	struct device *dev = &pdev->dev; /* OS device (from device tree) */
 	hsModem_t *hsModem = NULL;
-
 	uint32_t hwVer;
 	uint32_t hwRev;
 	int err = 0;
@@ -1415,16 +1427,7 @@ static int hsModem_probe(struct platform_device *pdev)
 		goto err_cdev;
 	}
 
-	struct kobject *root = &hsModem->device->kobj;
-
-	root = kobject_create_and_add( "stat", root ); 
-
-	err = sysfs_create_groups(root, hsModem_attrs_groups_stat);
-	if (err < 0)
-	{
-		dev_err(hsModem->dt_device, "couldn't register sysfs group\n");
-		goto err_cdev;
-	}
+	init_service_counters(hsModem);
 
 	/* create procfs entries */
 	procfs_ent = proc_create_data(hsModem->device->kobj.name, 0440,
@@ -1640,6 +1643,7 @@ static int hsModem_read_pck(struct hsModem_t* hsModem)
 
 	const uint32_t dataToRead = min(rdfo, satMsgLen);
 
+	// printk (KERN_WARNING "RX RX RX RX dataToRead %d\n",dataToRead);
 
 	if(!dst) {
 		return -EINVAL;
@@ -1658,6 +1662,8 @@ static int hsModem_read_pck(struct hsModem_t* hsModem)
 			dst[i] = readReg(hsModem->baseAddr, hsModem->rx_fifo.reg_data);
 		}
 		ret = satMsgLen;
+
+		update_service_counters(hsModem, LINK_DIR_RX);
 	}
 	else
 	{ /* Protocol driver not attached */
@@ -1737,6 +1743,8 @@ static int hsModem_write_pck(struct hsModem_t* hsModem)
 	}
 
 	writeReg(hsModem->baseAddr, HSMDM_REG_TX_PCK_END_OFFSET, 1);
+
+	update_service_counters(hsModem, LINK_DIR_TX);
 
 	return 1;
 }
@@ -2001,4 +2009,215 @@ static void select_tx_fifo(struct hsModem_t *hsModem)
 	{
 		hsModem->tx_fifo.reg_data = HSMDM_REG_TX_FIFO_B_DATA_OFFSET;
 	}
+}
+
+static void init_service_counters(struct hsModem_t* hsModem)
+{
+	printk (KERN_WARNING "init_service_counters called size %d\n",sizeof(hsModem->stat));
+	
+	memset(&hsModem->stat, 0, sizeof(hsModem->stat));	
+}
+
+typedef struct __attribute__ ((__packed__)) lrSegAnalyze_t
+{
+	lrHeader_t cmnHdr;
+	struct __attribute__ ((__packed__)){
+		unsigned fragEn			: 1;
+		unsigned tbd			: 2;
+		unsigned msgType		: 5;
+	}segHeaderBits;
+
+	uint8_t	segLen;
+	uint8_t fusionId;
+}lrSegAnalyze_t;
+
+typedef struct __attribute__ ((__packed__)) lrFregAnalyze_t
+{
+	lrHeader_t cmnHdr;
+	struct __attribute__ ((__packed__)){
+		unsigned fragEn			: 1;
+		unsigned tbd			: 2;
+		unsigned msgType		: 5;
+	}segHeaderBits;
+
+	uint8_t	fragHeaderByte;
+	
+	struct __attribute__ ((__packed__)){
+		unsigned fragEn			: 1;
+		unsigned firstLast		: 2;
+		unsigned msgType		: 5;
+	}fragHeaderBits;
+
+	uint8_t	segLen;
+	uint8_t fusionId;
+}lrFregAnalyze_t;
+
+static uint8_t currFregTxServiceId, currFregRxServiceId; //  Current fregment service ID 
+static void update_service_counters(struct hsModem_t* hsModem, linkDir_t dir)
+{
+	lrSegAnalyze_t *pLrSegAnalyze;
+	lrFregAnalyze_t *pLrFregAnalyze;
+	uint8_t fregDone = 0;
+
+	if(dir == LINK_DIR_TX)
+	{
+		if(hsModem->ctx.satMsgTx == NULL)
+		{
+			printk (KERN_WARNING "satMsgTx NULL\n");
+
+			return;
+		}
+
+		pLrSegAnalyze = (lrSegAnalyze_t*)hsModem->ctx.satMsgTx;
+		pLrFregAnalyze = (lrFregAnalyze_t*)hsModem->ctx.satMsgTx;
+
+		if(pLrSegAnalyze->cmnHdr.typeHeader != SAT_MSG_ID_DATA)
+		{			
+			return; 			//todo support counters!
+		}
+
+		if(pLrSegAnalyze->segHeaderBits.fragEn)
+		{
+			printk (KERN_WARNING "TX fregment enabled\n");
+
+			//FREGMENT
+			if(pLrFregAnalyze->fragHeaderBits.firstLast == SAT_FIRST_FRAG) //first segment
+			{
+				currFregTxServiceId = pLrFregAnalyze->fusionId;
+
+				printk (KERN_WARNING "fregment : segment TX service ID %d\n",currFregTxServiceId);
+			} 
+			else if (pLrFregAnalyze->fragHeaderBits.firstLast == SAT_LAST_FRAG) 
+			{
+				fregDone = 1;
+
+				printk (KERN_WARNING "fregment : last TX segment\n");
+			}
+
+			if(currFregTxServiceId == TERM_SERVICE_CORE_ADMIN)
+			{
+				hsModem->stat.apStat.adminTx.numOfBytes += pLrFregAnalyze->segLen;
+				hsModem->stat.apStat.adminTx.numOfFullSeg += 1;
+				// hsModem->stat.apStat.adminTx.numOfPartialSeg += 1;
+				if(fregDone == 1)
+				{
+					hsModem->stat.apStat.adminTx.numOfFreg += 1;
+				}
+			} 
+			else if(currFregTxServiceId == TERM_SERVICE_USER_UDP)
+			{
+				hsModem->stat.apStat.udpTx.numOfBytes += pLrFregAnalyze->segLen;
+				hsModem->stat.apStat.udpTx.numOfFullSeg += 1;
+				// hsModem->stat.apStat.udpTx.numOfPartialSeg += 1;
+				if(fregDone == 1)
+				{
+					hsModem->stat.apStat.udpTx.numOfFreg += 1;
+				}
+			} 
+			else
+			{
+				printk (KERN_WARNING "fregment : unknown segment TX service data %d\n",currFregTxServiceId);
+			}
+
+		} else {
+
+			//SEGMENT
+
+			printk (KERN_WARNING "segment TX service ID %d\n",pLrSegAnalyze->fusionId);
+
+			if(pLrSegAnalyze->fusionId == TERM_SERVICE_CORE_ADMIN)
+			{
+				hsModem->stat.apStat.adminTx.numOfBytes += pLrSegAnalyze->segLen;
+				hsModem->stat.apStat.adminTx.numOfFullSeg += 1;
+				// hsModem->stat.apStat.adminTx.numOfPartialSeg; //tbd
+			} else if(pLrSegAnalyze->fusionId == TERM_SERVICE_USER_UDP)
+			{
+				hsModem->stat.apStat.udpTx.numOfBytes += pLrSegAnalyze->segLen;
+				hsModem->stat.apStat.udpTx.numOfFullSeg += 1;
+				// hsModem->stat.apStat.udpTx.numOfPartialSeg += 1; //tbd
+			} else{
+				printk (KERN_WARNING "unknown segment TX service data %d\n",pLrSegAnalyze->fusionId);
+			}
+		}
+	}
+	else if(dir == LINK_DIR_RX)
+	{
+		if(hsModem->ctx.satMsgRx == NULL)
+		{
+			printk (KERN_WARNING "LINK_DIR_RX NULL\n");
+
+			return;
+		}
+
+		pLrSegAnalyze = (lrSegAnalyze_t*)hsModem->ctx.satMsgRx;
+		pLrFregAnalyze = (lrFregAnalyze_t*)hsModem->ctx.satMsgRx;
+
+		if(pLrSegAnalyze->cmnHdr.typeHeader != SAT_MSG_ID_DATA)
+		{		
+			return; 
+		}
+
+		if(pLrSegAnalyze->segHeaderBits.fragEn)
+		{
+			printk (KERN_WARNING "RX fregment enabled\n");
+
+			//FREGMENT : first segment
+			if(pLrFregAnalyze->fragHeaderBits.firstLast == SAT_FIRST_FRAG)
+			{
+				currFregRxServiceId = pLrFregAnalyze->fusionId;
+
+				printk (KERN_WARNING "fregment : segment RX service ID %d\n",currFregRxServiceId);
+			}
+			else if (pLrFregAnalyze->fragHeaderBits.firstLast == SAT_LAST_FRAG) 
+			{
+				fregDone = 1;
+
+				printk (KERN_WARNING "fregment : last RX segment\n");
+			}
+
+			if(currFregRxServiceId == TERM_SERVICE_CORE_ADMIN)
+			{
+				hsModem->stat.apStat.adminRx.numOfBytes += pLrFregAnalyze->segLen;
+				hsModem->stat.apStat.adminRx.numOfFullSeg += 1;
+				// hsModem->stat.apStat.adminTx.numOfPartialSeg += 1;
+				if(fregDone == 1)
+				{
+					hsModem->stat.apStat.udpRx.numOfFreg += 1;
+				}
+			} else if(currFregRxServiceId == TERM_SERVICE_USER_UDP)
+			{
+				hsModem->stat.apStat.udpRx.numOfBytes += pLrFregAnalyze->segLen;
+				hsModem->stat.apStat.udpRx.numOfFullSeg += 1;
+				// hsModem->stat.apStat.udpTx.numOfPartialSeg += 1;
+				if(fregDone == 1)
+				{
+					hsModem->stat.apStat.udpRx.numOfFreg += 1;
+				}
+			} 
+			else
+			{
+				printk (KERN_WARNING "fregment : segment RX service data %d\n",currFregRxServiceId);
+			}
+		} 
+		else 
+		{
+			printk (KERN_WARNING "segment RX service ID %d\n",pLrSegAnalyze->fusionId);
+
+			if(pLrSegAnalyze->fusionId == TERM_SERVICE_CORE_ADMIN)
+			{
+				hsModem->stat.apStat.adminRx.numOfBytes += pLrSegAnalyze->segLen;
+				hsModem->stat.apStat.adminRx.numOfFullSeg += 1;
+				// hsModem->stat.apStat.adminTx.numOfPartialSeg += 1;
+			} else if(pLrSegAnalyze->fusionId == TERM_SERVICE_USER_UDP)
+			{
+				hsModem->stat.apStat.udpRx.numOfBytes += pLrSegAnalyze->segLen;
+				hsModem->stat.apStat.udpRx.numOfFullSeg += 1;
+				// hsModem->stat.apStat.udpTx.numOfPartialSeg += 1;
+			} else{
+				printk (KERN_WARNING "unknown freqment TX service data %d\n",pLrSegAnalyze->fusionId);
+			}
+		}
+	}
+	
+	// printk (KERN_WARNING "update_service_counters done\n");
 }

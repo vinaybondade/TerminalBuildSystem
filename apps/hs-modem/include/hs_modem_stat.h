@@ -15,6 +15,7 @@ typedef struct serviceStat_t
 	uint32_t numOfBytes;
 	uint32_t numOfFullSeg;
 	uint32_t numOfPartialSeg;
+	uint32_t numOfFreg;
 } serviceStat_t;
 
 typedef enum
@@ -38,7 +39,10 @@ typedef enum term_service_type {
 typedef struct airProtStat_t
 {
 	uint32_t rxMsgDropped;
-	serviceStat_t srvStat[LINK_DIR_LAST][TERM_SERVICE_TYPE_MAX];
+	serviceStat_t adminTx;
+	serviceStat_t adminRx;
+	serviceStat_t udpTx;
+	serviceStat_t udpRx;
 } airProtStat_t;
  
 typedef struct hsModemStat_t

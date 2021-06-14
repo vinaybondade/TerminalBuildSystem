@@ -10,8 +10,8 @@
 
 extern int hsModemDbgLvl;
 
-#define hsModem_dbg(lvl, __f, ...) printk(KERN_WARNING __f, ##__VA_ARGS__)//\
-		// if(hsModemDbgLvl >= lvl) \
-			printk(KERN_WARNING __f, ##__VA_ARGS__)
+#define hsModem_dbg(lvl, __f, ...) \
+		if(hsModemDbgLvl >= lvl) \
+			printk(KERN_DEBUG __f, ##__VA_ARGS__)
 
 #endif /* __LINUX_HS_MODEM_DBG_H */
