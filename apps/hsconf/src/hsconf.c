@@ -66,6 +66,8 @@ static param_tag_t gpsLatTag = { "gpslat", "<gpslat>", "</gpslat>"};
 static param_tag_t gpsLongTag = { "gpslong", "<gpslong>", "</gpslong>"};
 static param_tag_t gpsAltTag = { "gpsalt", "<gpsalt>", "</gpsalt>"};
 static param_tag_t fltMgmtTimingTag = { "fms", "<fms>", "</fms>"};
+static param_tag_t udpRxPortTag = { "udprx", "<udprx>", "</udprx>"};
+static param_tag_t udpTxPortTag = { "udptx", "<udptx>", "</udptx>"};
 static param_tag_t rfSettingsTag = { "rfsettings", "<rfsettings>", "</rfsettings>"};
 //static param_tag_t hiSkyIdTag = { "hiskyid", "<hiSkyId>", "</hiSkyId>"};
 //static param_tag_t macAddrTag = { "macaddr", "<macaddr>", "</macaddr>"};
@@ -84,6 +86,8 @@ static config_param_info_t paramTable[] = {
     { "gpsalt",       CONFIG_MTD_DEV_1,         BLOBB,       (char*)RAM_ADDR,    set_param,       delete_param,         &gpsAltTag,           INTERNAL_BUFFER_SIZE},
     { "servid",       CONFIG_MTD_DEV_1,         BLOBB,       (char*)RAM_ADDR,    set_param,       delete_param,         &servIdTag,           INTERNAL_BUFFER_SIZE},
     { "fms",          CONFIG_MTD_DEV_1,         BLOBB,       (char*)RAM_ADDR,    set_param,       delete_param,         &fltMgmtTimingTag,    INTERNAL_BUFFER_SIZE},
+    { "udprx",        CONFIG_MTD_DEV_1,         BLOBB,       (char*)RAM_ADDR,    set_param,       delete_param,         &udpRxPortTag,        INTERNAL_BUFFER_SIZE},
+    { "udptx",        CONFIG_MTD_DEV_1,         BLOBB,       (char*)RAM_ADDR,    set_param,       delete_param,         &udpTxPortTag,        INTERNAL_BUFFER_SIZE},
     { "rfsettings",   CONFIG_MTD_DEV_2,         BLOBC,       (char*)RAM_ADDR,    set_rfSettings,  NULL,                 &rfSettingsTag,       INTERNAL_BUFFER_SIZE },
 };
 
