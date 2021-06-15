@@ -18,7 +18,7 @@ static ext4_file file;
 static struct ext4_blockdev *bd;
 static char buffer[32];
 static char *boot_file = buffer;
-static uint8_t *loadaddr = DDR_TEMP_START_ADDR;
+static uint8_t *loadaddr = (uint8_t *)DDR_TEMP_START_ADDR;
 
 static void get_srec_line (uint8_t *buf);
 static FRESULT load_srecfile(void);
@@ -84,7 +84,7 @@ int loadBootFile(transferFunc_t transferFunc)
 		rc = decode_srec_line (sr_buf, &srinfo);
 		if(rc) {
 			xil_printf("Failed to decode srec.\r\n");
-			ReleaseSD();
+			ext4_fclose(&file);
 			return 0;
 		}
 
@@ -105,7 +105,7 @@ int loadBootFile(transferFunc_t transferFunc)
 				{
 					if(transferFunc(&srinfo)) {
 						xil_printf("Failed to transfer srec.\r\n");
-						ReleaseSD();
+						ext4_fclose(&file);
 						return 0;
 					}
 				}
@@ -125,13 +125,13 @@ int loadBootFile(transferFunc_t transferFunc)
 			xil_printf("Done loading the MB boot file\r\nMicroBlaze will start at address 0x%x\r\n",(u32)srinfo.addr);
 			if((u32)srinfo.addr != (u32)MB_MIG_BASEADDR){
 				xil_printf("Error! MicroBlaze must start at MB_MIG_BASEADDR: 0x%x\r\n", (u32)MB_MIG_BASEADDR);
-				ReleaseSD();
+				ext4_fclose(&file);
 				return 0;
 			}
 			break;
 		}
 	}
-	ReleaseSD();
+	ext4_fclose(&file);
 
 	return 1;
 }
