@@ -15,26 +15,27 @@
 
 int cmd_create_firmware_partition(int argc, char*argv[])
 {
-    char cmdParams[9][256] = { "parted", EMMC_BLK_DEVICE, "-a", "none", "mkpart", "primary", "fat32", "0", "0" };
+    char cmdParams[10][256] = { "parted", EMMC_BLK_DEVICE, "-s", "-a", "none", "mkpart", "primary", "ext4", "8192B", "0" };
     char cmd[256];
-    const uint32_t PARTITION_SIZE = 260; //300 Mb
+    const uint32_t DEFAULT_PARTITION_SIZE = 300; //300 Mb
+    const uint32_t MIN_PARTITION_SIZE = 260; //300 Mb
 
-    memset(cmdParams[8], 0, sizeof(cmdParams[8]));
+    memset(cmdParams[9], 0, sizeof(cmdParams[9]));
     if(argc >= 3){
         // We have size given
         // Check for valid size
-        if(strtol(argv[2], NULL, 10) < PARTITION_SIZE){
-            printf("Minimum Partition size should be %d.\n", PARTITION_SIZE);
+        if(strtol(argv[2], NULL, 10) < MIN_PARTITION_SIZE){
+            printf("Minimum Partition size should be %d.\n", MIN_PARTITION_SIZE);
             return -1;
         }
 
-        strncpy(cmdParams[8], argv[2], strlen(argv[2]));
+        strncpy(cmdParams[9], argv[2], strlen(argv[2]));
     }
     else
-        sprintf(cmdParams[8], "%d", PARTITION_SIZE);
+        sprintf(cmdParams[9], "%d", DEFAULT_PARTITION_SIZE);    
 
-    sprintf(cmd, "%s %s %s %s %s %s %s %s %s", cmdParams[0], cmdParams[1], cmdParams[2], cmdParams[3],
-     cmdParams[4], cmdParams[5], cmdParams[6], cmdParams[7], cmdParams[8]);
+    sprintf(cmd, "%s %s %s %s %s %s %s %s %s %s", cmdParams[0], cmdParams[1], cmdParams[2], cmdParams[3],
+     cmdParams[4], cmdParams[5], cmdParams[6], cmdParams[7], cmdParams[8], cmdParams[9]);
 
     if(system(cmd) != 0){
         printf("Creating Firmware partition failed.\n");
@@ -42,7 +43,7 @@ int cmd_create_firmware_partition(int argc, char*argv[])
     }
 
     // Initialise the file system
-    sprintf(cmd, "mkfs.vfat %s", FIRMWARE_PARTITION);
+    sprintf(cmd, "mkfs.ext4 %s", FIRMWARE_PARTITION);
 
     if(system(cmd) != 0){
         printf("Initialising file system on Firmware partition failed.\n");
@@ -80,7 +81,7 @@ int get_firmware_partition_boundary(char *boundary, size_t len)
 
 int cmd_create_parameters_partition(int argc, char*argv[])
 {
-    char cmdParams[9][256] = { "parted", EMMC_BLK_DEVICE, "-a", "none", "mkpart", "primary", "ext4", "0", "0"};
+    char cmdParams[10][256] = { "parted", EMMC_BLK_DEVICE, "-s", "-a", "none", "mkpart", "primary", "ext4", "0", "0"};
     const uint32_t PARTITION_SIZE = 260; // 300 MB
     const uint32_t DEFAULT_PARTITION_SIZE = 2000; // 2Gigabytes
     const uint32_t DEFAULT_PARTITION_BUFFER_BYTES = 269; // 260 MB
@@ -122,8 +123,8 @@ int cmd_create_parameters_partition(int argc, char*argv[])
     endAddr = startAddr + strtol(size, NULL, 10);
     printf("endAddr - %d\n", endAddr);
 
-    sprintf(cmd, "%s %s %s %s %s %s %s %d %d", cmdParams[0], cmdParams[1], cmdParams[2], cmdParams[3],
-     cmdParams[4], cmdParams[5], cmdParams[6], startAddr, endAddr);
+    sprintf(cmd, "%s %s %s %s %s %s %s %s %d %d", cmdParams[0], cmdParams[1], cmdParams[2], cmdParams[3],
+     cmdParams[4], cmdParams[5], cmdParams[6], cmdParams[7], startAddr, endAddr);
 
     if(system(cmd) != 0){
         printf("Creating RCP file partition failed.\n");
@@ -168,7 +169,7 @@ int cmd_delete_partition(int argc, char*argv[])
 int cmd_quick_format_emmc(int argc, char*argv[])
 {
     char cmd[256];
-    sprintf(cmd, "sudo dd if=/dev/zero of=%s bs=1k count=2048", EMMC_BLK_DEVICE);
+    sprintf(cmd, "dd if=/dev/zero of=%s bs=1k count=2048", EMMC_BLK_DEVICE);
 
     if(system(cmd) != 0){
         printf("EMMC quick format failed.\n");
@@ -185,6 +186,20 @@ int cmd_show_partitions(int argc, char*argv[])
 
     if(system(cmd) != 0){
         printf("EMMC print partitions command failed.\n");
+        return -1;
+    }
+
+    // Perform label init
+    sprintf(cmd, "parted "EMMC_BLK_DEVICE" -s -a none mklabel msdos");
+
+    if(system(cmd) != 0){
+        printf("EMMC setting label failed.\n");
+        return -1;
+    }
+    sprintf(cmd, "parted "EMMC_BLK_DEVICE" -s -a none mklabel msdos");
+
+    if(system(cmd) != 0){
+        printf("EMMC setting label failed.\n");
         return -1;
     }
 

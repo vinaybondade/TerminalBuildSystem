@@ -123,7 +123,6 @@
 ******************************************************************************/
 
 /***************************** Include Files *********************************/
-
 #include "fsbl.h"
 #include "qspi.h"
 #include "nand.h"
@@ -138,10 +137,7 @@
 #include "fsbl_hooks.h"
 #include "xtime_l.h"
 #include "main.h"
-
-#ifdef XPAR_XWDTPS_0_BASEADDR
-#include "xwdtps.h"
-#endif
+#include "ext4.h"
 
 #ifdef STDOUT_BASEADDRESS
 #ifdef XPAR_XUARTPS_0_BASEADDR
@@ -465,17 +461,23 @@ int main(void)
 	if (BootModeRegister == SD_MODE) {
 		fsbl_printf(DEBUG_GENERAL,"Boot mode is SD\r\n");
 
-		/*
-		 * SD initialization returns file open error or success
-		 */
-		Status = InitSD(NULL);
-		if (Status != XST_SUCCESS) {
-			fsbl_printf(DEBUG_GENERAL,"SD_INIT_FAIL\r\n");
-			OutputStatus(SD_INIT_FAIL);
-			FsblFallback();
+		if(RegisterSD() != 0){
+			fsbl_printf(DEBUG_INFO,"Failed to register SD block device.\r\n");
 		}
-		MoveImage = SDAccess;
-		fsbl_printf(DEBUG_INFO,"SD Init Done \r\n");
+		else
+		{/*
+			* SD initialization returns file open error or success
+			*/
+			Status = InitSD(NULL);
+			if (Status != XST_SUCCESS) {
+				fsbl_printf(DEBUG_GENERAL,"SD_INIT_FAIL\r\n");
+				OutputStatus(SD_INIT_FAIL);
+				FsblFallback();
+			}
+			MoveImage = SDAccess;
+			fsbl_printf(DEBUG_INFO,"SD Init Done \r\n");			
+		}
+		
 	} else
 
 //	if (BootModeRegister == MMC_MODE) {
@@ -577,7 +579,7 @@ int main(void)
 	
 	fsbl_printf(DEBUG_GENERAL,"Zero memory - addr:0x10000008 val:%x\r\n", Xil_In32(0x10000008));
 
-	Status = InitSD("fpga.bin");
+	Status = InitSD("/mp/fpga.bin");
 	if (Status != XST_SUCCESS) {
 		fsbl_printf(DEBUG_GENERAL,"SD/MMC INIT_FAIL - fpga.bin\r\n");
 //		OutputStatus(SD_INIT_FAIL);
@@ -595,7 +597,7 @@ int main(void)
 	}
 	else {
 		/* Load u-boot from SD/MMC */
-		Status = InitSD("uboot.bin");
+		Status = InitSD("/mp/uboot.bin");
 		if (Status != XST_SUCCESS) {
 			fsbl_printf(DEBUG_GENERAL,"SD/MMC INIT_FAIL - uboot.bin\r\n")
 		}
@@ -649,6 +651,7 @@ int main(void)
 	OutputStatus(NO_DDR);
 	FsblFallback();
 #endif
+
 
 	return Status;
 }

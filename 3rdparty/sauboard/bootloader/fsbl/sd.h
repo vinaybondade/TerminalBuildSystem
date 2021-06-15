@@ -61,6 +61,7 @@ extern "C" {
 /************************** Function Prototypes ******************************/
 
 #if defined(XPAR_PS7_SD_0_S_AXI_BASEADDR) || defined(XPAR_XSDPS_0_BASEADDR)
+u32 RegisterSD(void);
 u32 InitSD(const char *);
 
 u32 SDAccess( u32 SourceAddress,

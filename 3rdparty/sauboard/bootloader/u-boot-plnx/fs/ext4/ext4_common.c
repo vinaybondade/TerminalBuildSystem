@@ -46,6 +46,18 @@ int ext4fs_indir3_blkno = -1;
 struct ext2_inode *g_parent_inode;
 static int symlinknest;
 
+/* Extent tree cache caches one entry per tree level
+ * eg, ext_block->eh_depth is used as the index into the cache
+ *
+ * If the tree is deeper than CONFIG_EXT4_EXTENT_CACHE_SIZE (very unlikely),
+ * file read performance will be impacted by repeated re-reads
+ * of those index nodes.
+ */
+
+#ifndef CONFIG_EXT4_EXTENT_CACHE_SIZE
+#define CONFIG_EXT4_EXTENT_CACHE_SIZE 5
+#endif
+
 #if defined(CONFIG_EXT4_WRITE)
 struct ext2_block_group *ext4fs_get_group_descriptor
 	(const struct ext_filesystem *fs, uint32_t bg_idx)
@@ -1509,6 +1521,43 @@ void ext4fs_allocate_blocks(struct ext2_inode *file_inode,
 
 #endif
 
+/* Extent tree cache caches one entry per tree level
+ * eg, ext_block->eh_depth is used as the index into the cache
+ *
+ * If the tree is deeper than CONFIG_EXT4_EXTENT_CACHE_SIZE (very unlikely),
+ * file read performance will be impacted by repeated re-reads
+ * of those index nodes.
+ */
+
+struct extent_cache_entry {
+	unsigned long long block;
+	struct ext4_extent_header *ext_block;
+};
+
+static struct extent_cache_entry
+	extent_cache[CONFIG_EXT4_EXTENT_CACHE_SIZE];
+
+static void ext4fs_init_extent_block_cache(void)
+{
+	int i;
+
+	for (i = 0; i < CONFIG_EXT4_EXTENT_CACHE_SIZE; i++) {
+		extent_cache[i].block = 0;
+		extent_cache[i].ext_block = NULL;
+	}
+}
+
+static void ext4fs_free_extent_block_cache(void)
+{
+	int i;
+
+	for (i = 0; i < CONFIG_EXT4_EXTENT_CACHE_SIZE; i++) {
+		extent_cache[i].block = 0;
+		free(extent_cache[i].ext_block);
+		extent_cache[i].ext_block = NULL;
+	}
+}
+
 static struct ext4_extent_header *ext4fs_get_extent_block
 	(struct ext2_data *data, char *buf,
 		struct ext4_extent_header *ext_block,
@@ -1518,6 +1567,7 @@ static struct ext4_extent_header *ext4fs_get_extent_block
 	unsigned long long block;
 	int blksz = EXT2_BLOCK_SIZE(data);
 	int i;
+	unsigned int cache_item;
 
 	while (1) {
 		index = (struct ext4_extent_idx *)(ext_block + 1);
@@ -1540,11 +1590,31 @@ static struct ext4_extent_header *ext4fs_get_extent_block
 		block = le16_to_cpu(index[i].ei_leaf_hi);
 		block = (block << 32) + le32_to_cpu(index[i].ei_leaf_lo);
 
-		if (ext4fs_devread((lbaint_t)block << log2_blksz, 0, blksz,
-				   buf))
-			ext_block = (struct ext4_extent_header *)buf;
-		else
-			return NULL;
+		// check cache, read block from device if not found
+		cache_item = le16_to_cpu(ext_block->eh_depth) - 1;
+		if (cache_item < CONFIG_EXT4_EXTENT_CACHE_SIZE &&
+		    extent_cache[cache_item].block == block) {
+			ext_block = extent_cache[cache_item].ext_block;
+		} else {
+			if (ext4fs_devread((lbaint_t)block << log2_blksz, 0,
+					   blksz, buf))
+				ext_block = (struct ext4_extent_header *)buf;
+			else
+				return NULL;
+			// put in cache
+			if (cache_item < CONFIG_EXT4_EXTENT_CACHE_SIZE) {
+				struct extent_cache_entry *cache_entry =
+				   &extent_cache[cache_item];
+				if (!cache_entry->ext_block)
+					cache_entry->ext_block = zalloc(blksz);
+				if (!cache_entry->ext_block) {
+					printf("ext4 cache alloc failed\n");
+					return NULL;
+				}
+				memcpy(cache_entry->ext_block, buf, blksz);
+				cache_entry->block = block;
+			}
+		}
 	}
 }
 
@@ -1986,6 +2056,7 @@ void ext4fs_close(void)
 	if (ext4fs_root != NULL) {
 		free(ext4fs_root);
 		ext4fs_root = NULL;
+		ext4fs_free_extent_block_cache();
 	}
 
 	ext4fs_reinit_global();
@@ -2362,6 +2433,7 @@ int ext4fs_mount(unsigned part_length)
 
 	ext4fs_root = data;
 
+	ext4fs_init_extent_block_cache();
 	return 1;
 fail:
 	printf("Failed to mount ext2 filesystem...\n");
