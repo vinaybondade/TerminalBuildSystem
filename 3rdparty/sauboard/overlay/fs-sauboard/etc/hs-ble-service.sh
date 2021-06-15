@@ -1,6 +1,6 @@
 #!/bin/sh
 
-EXE="/opt/zedboard/bin/ble-service"
+EXE="/opt/sauboard/bin/ble-service"
 IP="127.0.0.1"
 
 daemonize()
