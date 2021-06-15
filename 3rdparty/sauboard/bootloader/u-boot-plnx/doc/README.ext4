@@ -33,6 +33,13 @@ In addition, to get the write access command "ext4write", use:
 which automatically defines CONFIG_EXT4_WRITE if it wasn't defined
 already.
 
+For files with extents, an ext4 extent tree cache improves performance:
+
+  CONFIG_EXT4_EXTENT_CACHE_SIZE <#>
+
+The above cache size defaults to 5 if not defined. This default is
+strongly recommended. 0 will turn off extent caching.
+
 Also relevant are the generic filesystem commands, selected by:
 
   #define CONFIG_CMD_FS_GENERIC
