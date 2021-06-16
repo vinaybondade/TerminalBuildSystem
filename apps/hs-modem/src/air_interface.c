@@ -354,13 +354,6 @@ int air_msg_build(airContext_t* ctx, uint8_t modemEbN0data6bit)
 
 	func->init_header(satMsg, ctx->mtID, modemEbN0data6bit, satMsgSeqNum++);
 	
-	hsModem_dbg(9, "TX INT userMsg len %x msgType %x seqNum %x fragFlag %x reIndx %x fragSec %x\n",	userMsg->len,
-																	userMsg->msgType,
-																	userMsg->seqNum,
-																	userMsg->fragFlag,
-																	userMsg->reIndx,
-																	userMsg->fragSec);
-
 	/*************************************************************************
 	 * A case in which a current message is a continuation fragment          *
 	 * of a previous fragment.                                               *
