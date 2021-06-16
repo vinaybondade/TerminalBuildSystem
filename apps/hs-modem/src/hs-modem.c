@@ -282,18 +282,14 @@ static ssize_t sysfs_stat_read(struct device *dev, char *buf,
 				modem_sysfs_stat_t stat)
 {
 	hsModem_t *hsModem = dev_get_drvdata(dev);
-	char tmpBuf[128] = {0};
+	char tmpBuf[64] = {0};
 	size_t len;
-	uint32_t val = 0;
+	uint32_t val;
 
 	if(hsModem == NULL)
 	{
-		printk (KERN_WARNING "sysfs_stat_read NULL\n");
-
 		return -EINVAL;
 	}
-
-	// printk (KERN_WARNING "sysfs_stat_read stat %d\n",  stat);
 
 	switch(stat)
 	{
@@ -367,8 +363,6 @@ static ssize_t sysfs_stat_read(struct device *dev, char *buf,
 			return -EINVAL;
 			break;
 	}
-
-	// printk (KERN_WARNING "sysfs_stat_read val %d\n",  val);
 
 	len = snprintf(tmpBuf, sizeof(tmpBuf), "%d\n", val);
 	memcpy(buf, tmpBuf, len);
@@ -1290,6 +1284,7 @@ static int hsModem_probe(struct platform_device *pdev)
 	struct resource *r_mem; /* IO mem resources */
 	struct device *dev = &pdev->dev; /* OS device (from device tree) */
 	hsModem_t *hsModem = NULL;
+
 	uint32_t hwVer;
 	uint32_t hwRev;
 	int err = 0;
@@ -1680,7 +1675,6 @@ static int hsModem_read_pck(struct hsModem_t* hsModem)
 
 	const uint32_t dataToRead = min(rdfo, satMsgLen);
 
-	// printk (KERN_WARNING "RX RX RX RX dataToRead %d\n",dataToRead);
 
 	if(!dst) {
 		return -EINVAL;
@@ -2065,7 +2059,6 @@ static void update_lr_service_counters(struct hsModem_t* hsModem, linkDir_t dir)
 	{
 		if(hsModem->ctx.satMsgTx == NULL)
 		{
-			printk (KERN_WARNING "satMsgTx NULL\n");
 			return;
 		}
 
@@ -2079,20 +2072,14 @@ static void update_lr_service_counters(struct hsModem_t* hsModem, linkDir_t dir)
 
 		if(pLrSegAnalyze->segHeaderBits.fragEn)
 		{
-			// printk (KERN_WARNING "TX fregment enabled\n");
-
 			//FREGMENT
 			if(pLrFregAnalyze->fragHeaderBits.firstLast == SAT_FIRST_FRAG) //first segment
 			{
 				currFregTxServiceId = pLrFregAnalyze->fusionId;
-
-				// printk (KERN_WARNING "fregment : segment TX service ID %d\n",currFregTxServiceId);
 			} 
 			else if (pLrFregAnalyze->fragHeaderBits.firstLast == SAT_LAST_FRAG) 
 			{
 				fregDone = 1;
-
-				// printk (KERN_WARNING "fregment : last TX segment\n");
 			}
 
 			if(currFregTxServiceId == TERM_SERVICE_CORE_ADMIN)
@@ -2114,18 +2101,9 @@ static void update_lr_service_counters(struct hsModem_t* hsModem, linkDir_t dir)
 				{
 					hsModem->stat.apStat.udpTx.numOfFreg += 1;
 				}
-			} 
-			else
-			{
-				// printk (KERN_WARNING "fregment : unknown segment TX service data %d\n",currFregTxServiceId);
 			}
-
 		} else {
-
 			//SEGMENT
-
-			// printk (KERN_WARNING "segment TX service ID %d\n",pLrSegAnalyze->fusionId);
-
 			if(pLrSegAnalyze->fusionId == TERM_SERVICE_CORE_ADMIN)
 			{
 				hsModem->stat.apStat.adminTx.numOfBytes += pLrSegAnalyze->segLen;
@@ -2136,8 +2114,6 @@ static void update_lr_service_counters(struct hsModem_t* hsModem, linkDir_t dir)
 				hsModem->stat.apStat.udpTx.numOfBytes += pLrSegAnalyze->segLen;
 				hsModem->stat.apStat.udpTx.numOfFullSeg += 1;
 				// hsModem->stat.apStat.udpTx.numOfPartialSeg += 1; //tbd
-			} else{
-				// printk (KERN_WARNING "unknown segment TX service data %d\n",pLrSegAnalyze->fusionId);
 			}
 		}
 	}
@@ -2145,8 +2121,6 @@ static void update_lr_service_counters(struct hsModem_t* hsModem, linkDir_t dir)
 	{
 		if(hsModem->ctx.satMsgRx == NULL)
 		{
-			printk (KERN_WARNING "LINK_DIR_RX NULL\n");
-
 			return;
 		}
 
@@ -2160,20 +2134,14 @@ static void update_lr_service_counters(struct hsModem_t* hsModem, linkDir_t dir)
 
 		if(pLrSegAnalyze->segHeaderBits.fragEn)
 		{
-			// printk (KERN_WARNING "RX fregment enabled\n");
-
 			//FREGMENT : first segment
 			if(pLrFregAnalyze->fragHeaderBits.firstLast == SAT_FIRST_FRAG)
 			{
 				currFregRxServiceId = pLrFregAnalyze->fusionId;
-
-				// printk (KERN_WARNING "fregment : segment RX service ID %d\n",currFregRxServiceId);
 			}
 			else if (pLrFregAnalyze->fragHeaderBits.firstLast == SAT_LAST_FRAG) 
 			{
 				fregDone = 1;
-
-				// printk (KERN_WARNING "fregment : last RX segment\n");
 			}
 
 			if(currFregRxServiceId == TERM_SERVICE_CORE_ADMIN)
@@ -2195,16 +2163,10 @@ static void update_lr_service_counters(struct hsModem_t* hsModem, linkDir_t dir)
 				{
 					hsModem->stat.apStat.udpRx.numOfFreg += 1;
 				}
-			} 
-			else
-			{
-				// printk (KERN_WARNING "fregment : segment RX service data %d\n",currFregRxServiceId);
 			}
 		} 
 		else 
 		{
-			// printk (KERN_WARNING "segment RX service ID %d\n",pLrSegAnalyze->fusionId);
-
 			if(pLrSegAnalyze->fusionId == TERM_SERVICE_CORE_ADMIN)
 			{
 				hsModem->stat.apStat.adminRx.numOfBytes += pLrSegAnalyze->segLen;
@@ -2215,8 +2177,6 @@ static void update_lr_service_counters(struct hsModem_t* hsModem, linkDir_t dir)
 				hsModem->stat.apStat.udpRx.numOfBytes += pLrSegAnalyze->segLen;
 				hsModem->stat.apStat.udpRx.numOfFullSeg += 1;
 				// hsModem->stat.apStat.udpTx.numOfPartialSeg += 1;
-			} else{
-				// printk (KERN_WARNING "unknown freqment TX service data %d\n",pLrSegAnalyze->fusionId);
 			}
 		}
 	}
