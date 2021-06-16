@@ -35,7 +35,7 @@ int is_air_msg_valid(airContext_t* ctx)
 
 	calcCrc = crcSlow(satMsg, ctx->a_info.satMsgLenRx - sizeof(crc16_t));
 	recCrc = (crc16_t*)(satMsg + ctx->a_info.satMsgLenRx - sizeof(crc16_t));
-	// hsModem_dbg(5, "0x%x, 0x%x\n", (uint16_t)calcCrc, (uint16_t)*recCrc);
+	hsModem_dbg(5, "0x%x, 0x%x\n", (uint16_t)calcCrc, (uint16_t)*recCrc);
 	return (calcCrc == (*recCrc));
 }	
 
