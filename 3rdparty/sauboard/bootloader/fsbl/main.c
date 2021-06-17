@@ -54,28 +54,12 @@
 * 4.00a sgd 02/28/13	Code Cleanup
 * 						Fix for CR#681014 - ECC init in FSBL should not
 * 						                    call fabric_init()
-* 						Fix for CR#689077 - FSBL hangs at Handoff clearing the
-* 						                    TX UART buffer when using UART0
-* 						                    instead of UART1
-*						Fix for CR#694038 - FSBL debug logs always prints 14.3
-*											as the Revision number - this is
-*										    incorrect
-*						Fix for CR#694039 - FSBL prints "unsupported silicon
-*											version for v3.0" 3.0 Silicon
-*                       Fix for CR#699475 - FSBL functionality is broken and
-*                                           its not able to boot in QSPI/NAND
-*                                           bootmode
+* 						Fix for CR#689077 - FSBL hangs at Hastruct ext4_blockdev *bd
 *                       Removed DDR initialization check
 *                       Removed DDR ECC initialization code
 *						Modified hand off address check to 1MB
 *						Added RSA authentication support
-*						Watchdog disabled for AES E-Fuse encryption
-* 5.00a sgd 05/17/13	Fallback support for E-Fuse encryption
-*                       Fix for CR#708728 - Issues seen while making HP
-*                                           interconnect 32 bit wide
-* 6.00a kc  07/30/13    Fix for CR#708316 - PS7_init.tcl file should have
-*                                           Error mechanism for all mask_poll
-*                       Fix for CR#691150 - ps7_init does not check for
+*						Watchdog disabled for AES E-Fuse encstruct ext4_blockdev *bdt check for
 *                                           peripheral initialization failures
 *                                           or timeout on polls
 *                       Fix for CR#724165 - Partition Header used by FSBL is
@@ -95,19 +79,12 @@
 *		 									are identical in length
 * 10.00a kc 07/24/14	Fix for CR#809336 - Minor code cleanup
 *        kc 08/27/14	Fix for CR#820356 - FSBL compilation fails with
-* 											IAR compiler
-* 11.00a kv 10/08/14	Fix for CR#826030 - LinearBootDeviceFlag should
-*											be initialized to 0 in IO mode
+* 											IAR compi0000000000000000000000000000000000000000lized to 0 in IO mode
 *											case
 * 15.00a gan 07/21/16   Fix for CR# 953654 -(2016.3)FSBL -
 * 											In pcap.c/pcap.h/main.c,
 * 											Fabric Initialization sequence
-* 											is modified to check the PL power
-* 											before sequence starts and checking
-* 											INIT_B reset status twice in case
-* 											of failure.
-* </pre>
-*
+* 											is modifi0000000000000000000000000000000000000000
 * @note
 * FSBL runs from OCM, Based on the boot mode selected, FSBL will copy
 * the partitions from the flash device. If the partition is bitstream then
@@ -115,19 +92,12 @@
 * an application , FSBL will copy the application into DDR and does a
 * handoff.The application should not be starting at the OCM address,
 * FSBL does not remap the DDR. Application should use DDR starting from 1MB
-*
-* FSBL can be stitched along with bitstream and application using bootgen
-*
-* Refer to fsbl.h file for details on the compilation flags supported in FSBL
+*0000000000000000000000000000000000000000 flags supported in FSBL
 *
 ******************************************************************************/
 
 /***************************** Include Files *********************************/
-#include "fsbl.h"
-#include "qspi.h"
-#include "nand.h"
-#include "nor.h"
-#include "sd.h"
+0000000000000000000000000000000000000000
 #include "pcap.h"
 #include "image_mover.h"
 #include "xparameters.h"
@@ -138,6 +108,8 @@
 #include "xtime_l.h"
 #include "main.h"
 #include "ext4.h"
+0000000000000000000000000000000000000000
+#endif
 
 #ifdef STDOUT_BASEADDRESS
 #ifdef XPAR_XUARTPS_0_BASEADDR

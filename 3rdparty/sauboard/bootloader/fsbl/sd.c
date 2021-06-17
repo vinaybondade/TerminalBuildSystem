@@ -65,7 +65,6 @@
 #include "xstatus.h"
 
 #include "ext4.h"
-#include "ff.h"
 #include "sd.h"
 
 /************************** Constant Definitions *****************************/
@@ -86,7 +85,7 @@ static struct ext4_blockdev *bd;
 static char buffer[32];
 static char *boot_file = buffer;
 
-struct ext4_blockdev *file_dev_get(void);
+#define FRESULT uint8_t
 
 u32 RegisterSD(void)
 {
@@ -104,8 +103,6 @@ u32 RegisterSD(void)
 	if (rc != EOK) {
 		return XST_FAILURE;
 	}
-
-	ext4_cache_write_back("/mp/", 1);
 
 	return EOK;
 }
@@ -168,7 +165,7 @@ u32 SDAccess( u32 SourceAddress, u32 DestinationAddress, u32 LengthBytes)
 {
 
 	FRESULT rc;	 /* Result code */
-	size_t br;
+	uint32_t br;
 	uint32_t readBlkCount = LengthBytes / XSDPS_BLK_SIZE_512_MASK;
 	uint32_t bytesToRead = LengthBytes;
 
@@ -183,11 +180,11 @@ u32 SDAccess( u32 SourceAddress, u32 DestinationAddress, u32 LengthBytes)
 
 	while(readBlkCount--){
 		if(bytesToRead > XSDPS_BLK_SIZE_512_MASK){
-			rc = ext4_fread(&file, (void *)DestinationAddress, XSDPS_BLK_SIZE_512_MASK, &br);
+			rc = ext4_fread(&file, DestinationAddress, XSDPS_BLK_SIZE_512_MASK, &br);
 			bytesToRead -= XSDPS_BLK_SIZE_512_MASK;
 		}
 		else{
-			rc = ext4_fread(&file, (void *)DestinationAddress, bytesToRead, &br);
+			rc = ext4_fread(&file, DestinationAddress, bytesToRead, &br);
 			bytesToRead -= bytesToRead;
 		}
 		DestinationAddress += XSDPS_BLK_SIZE_512_MASK;
