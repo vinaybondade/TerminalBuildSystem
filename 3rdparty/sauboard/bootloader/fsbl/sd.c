@@ -54,7 +54,6 @@
 /***************************** Include Files *********************************/
 #include "xparameters.h"
 #include "fsbl.h"
-#include "xsdps_hw.h"
 
 #if defined(XPAR_PS7_SD_0_S_AXI_BASEADDR) || defined(XPAR_XSDPS_0_BASEADDR)
 
@@ -64,7 +63,7 @@
 
 #include "xstatus.h"
 
-#include "ext4.h"
+#include "ff.h"
 #include "sd.h"
 
 /************************** Constant Definitions *****************************/
@@ -80,32 +79,10 @@
 extern u32 FlashReadBaseAddress;
 
 
-static ext4_file file;
-static struct ext4_blockdev *bd;
+static FIL fil;		/* File object */
+static FATFS fatfs;
 static char buffer[32];
 static char *boot_file = buffer;
-
-#define FRESULT uint8_t
-
-u32 RegisterSD(void)
-{
-	bd = file_dev_get();
-
-	/* Register volume work area, initialize device */
-	if(ext4_device_register(bd, "ext4_fs") != 0){
-		fsbl_printf(DEBUG_INFO, "Ext4 device registry failed.\n");
-		return EIO;
-	}
-
-	FRESULT rc = ext4_mount("ext4_fs", "/mp/", false);
-	fsbl_printf(DEBUG_INFO,"SD: rc= %.8x\n\r", rc);
-
-	if (rc != EOK) {
-		return XST_FAILURE;
-	}
-
-	return EOK;
-}
 
 /******************************************************************************/
 /******************************************************************************/
@@ -124,10 +101,19 @@ u32 RegisterSD(void)
 ****************************************************************************/
 u32 InitSD(const char *filename)
 {
+
 	FRESULT rc;
+	TCHAR *path = "0:/"; /* Logical drive number is 0 */
 
 	if(filename) {
 		fsbl_printf(DEBUG_INFO,"SD: file name: %s\r\n", filename);
+		/* Register volume work area, initialize device */
+		rc = f_mount(&fatfs, path, 0);
+		fsbl_printf(DEBUG_INFO,"SD: rc= %.8x\n\r", rc);
+
+		if (rc != FR_OK) {
+			return XST_FAILURE;
+		}
 
 		strcpy_rom(buffer, filename);
 		boot_file = (char *)buffer;
@@ -135,7 +121,7 @@ u32 InitSD(const char *filename)
 	FlashReadBaseAddress = XPAR_PS7_SD_0_S_AXI_BASEADDR;
 
 	if(filename) {
-		rc = ext4_fopen(&file, filename, "rb");
+		rc = f_open(&fil, boot_file, FA_READ);
 		if (rc) {
 			fsbl_printf(DEBUG_GENERAL,"SD: Unable to open file %s: %d\r\n", boot_file, rc);
 			return XST_FAILURE;
@@ -165,34 +151,18 @@ u32 SDAccess( u32 SourceAddress, u32 DestinationAddress, u32 LengthBytes)
 {
 
 	FRESULT rc;	 /* Result code */
-	uint32_t br;
-	uint32_t readBlkCount = LengthBytes / XSDPS_BLK_SIZE_512_MASK;
-	uint32_t bytesToRead = LengthBytes;
+	UINT br;
 
-	if(LengthBytes % XSDPS_BLK_SIZE_512_MASK)
-		readBlkCount++;
-
-	rc = ext4_fseek(&file, SourceAddress, SEEK_SET);
+	rc = f_lseek(&fil, SourceAddress);
 	if (rc) {
 		fsbl_printf(DEBUG_INFO,"SD: Unable to seek to %lx\n", SourceAddress);
 		return XST_FAILURE;
 	}
 
-	while(readBlkCount--){
-		if(bytesToRead > XSDPS_BLK_SIZE_512_MASK){
-			rc = ext4_fread(&file, DestinationAddress, XSDPS_BLK_SIZE_512_MASK, &br);
-			bytesToRead -= XSDPS_BLK_SIZE_512_MASK;
-		}
-		else{
-			rc = ext4_fread(&file, DestinationAddress, bytesToRead, &br);
-			bytesToRead -= bytesToRead;
-		}
-		DestinationAddress += XSDPS_BLK_SIZE_512_MASK;
+	rc = f_read(&fil, (void*)DestinationAddress, LengthBytes, &br);
 
-		if (rc) {
-			fsbl_printf(DEBUG_GENERAL,"*** ERROR: f_read returned %d\r\n", rc);
-			return XST_FAILURE;
-		}
+	if (rc) {
+		fsbl_printf(DEBUG_GENERAL,"*** ERROR: f_read returned %d\r\n", rc);
 	}
 
 	return XST_SUCCESS;
@@ -214,8 +184,9 @@ u32 SDAccess( u32 SourceAddress, u32 DestinationAddress, u32 LengthBytes)
 ****************************************************************************/
 void ReleaseSD(void) {
 
-	ext4_fclose(&file);
+	f_close(&fil);
 	return;
+
 
 }
 #endif

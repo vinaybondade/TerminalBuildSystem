@@ -54,12 +54,28 @@
 * 4.00a sgd 02/28/13	Code Cleanup
 * 						Fix for CR#681014 - ECC init in FSBL should not
 * 						                    call fabric_init()
-* 						Fix for CR#689077 - FSBL hangs at Hastruct ext4_blockdev *bd
+* 						Fix for CR#689077 - FSBL hangs at Handoff clearing the
+* 						                    TX UART buffer when using UART0
+* 						                    instead of UART1
+*						Fix for CR#694038 - FSBL debug logs always prints 14.3
+*											as the Revision number - this is
+*										    incorrect
+*						Fix for CR#694039 - FSBL prints "unsupported silicon
+*											version for v3.0" 3.0 Silicon
+*                       Fix for CR#699475 - FSBL functionality is broken and
+*                                           its not able to boot in QSPI/NAND
+*                                           bootmode
 *                       Removed DDR initialization check
 *                       Removed DDR ECC initialization code
 *						Modified hand off address check to 1MB
 *						Added RSA authentication support
-*						Watchdog disabled for AES E-Fuse encstruct ext4_blockdev *bdt check for
+*						Watchdog disabled for AES E-Fuse encryption
+* 5.00a sgd 05/17/13	Fallback support for E-Fuse encryption
+*                       Fix for CR#708728 - Issues seen while making HP
+*                                           interconnect 32 bit wide
+* 6.00a kc  07/30/13    Fix for CR#708316 - PS7_init.tcl file should have
+*                                           Error mechanism for all mask_poll
+*                       Fix for CR#691150 - ps7_init does not check for
 *                                           peripheral initialization failures
 *                                           or timeout on polls
 *                       Fix for CR#724165 - Partition Header used by FSBL is
@@ -79,12 +95,19 @@
 *		 									are identical in length
 * 10.00a kc 07/24/14	Fix for CR#809336 - Minor code cleanup
 *        kc 08/27/14	Fix for CR#820356 - FSBL compilation fails with
-* 											IAR compi0000000000000000000000000000000000000000lized to 0 in IO mode
+* 											IAR compiler
+* 11.00a kv 10/08/14	Fix for CR#826030 - LinearBootDeviceFlag should
+*											be initialized to 0 in IO mode
 *											case
 * 15.00a gan 07/21/16   Fix for CR# 953654 -(2016.3)FSBL -
 * 											In pcap.c/pcap.h/main.c,
 * 											Fabric Initialization sequence
-* 											is modifi0000000000000000000000000000000000000000
+* 											is modified to check the PL power
+* 											before sequence starts and checking
+* 											INIT_B reset status twice in case
+* 											of failure.
+* </pre>
+*
 * @note
 * FSBL runs from OCM, Based on the boot mode selected, FSBL will copy
 * the partitions from the flash device. If the partition is bitstream then
@@ -92,12 +115,20 @@
 * an application , FSBL will copy the application into DDR and does a
 * handoff.The application should not be starting at the OCM address,
 * FSBL does not remap the DDR. Application should use DDR starting from 1MB
-*0000000000000000000000000000000000000000 flags supported in FSBL
+*
+* FSBL can be stitched along with bitstream and application using bootgen
+*
+* Refer to fsbl.h file for details on the compilation flags supported in FSBL
 *
 ******************************************************************************/
 
 /***************************** Include Files *********************************/
-0000000000000000000000000000000000000000
+
+#include "fsbl.h"
+#include "qspi.h"
+#include "nand.h"
+#include "nor.h"
+#include "sd.h"
 #include "pcap.h"
 #include "image_mover.h"
 #include "xparameters.h"
@@ -107,8 +138,9 @@
 #include "fsbl_hooks.h"
 #include "xtime_l.h"
 #include "main.h"
-#include "ext4.h"
-0000000000000000000000000000000000000000
+
+#ifdef XPAR_XWDTPS_0_BASEADDR
+#include "xwdtps.h"
 #endif
 
 #ifdef STDOUT_BASEADDRESS
@@ -433,23 +465,17 @@ int main(void)
 	if (BootModeRegister == SD_MODE) {
 		fsbl_printf(DEBUG_GENERAL,"Boot mode is SD\r\n");
 
-		if(RegisterSD() != 0){
-			fsbl_printf(DEBUG_INFO,"Failed to register SD block device.\r\n");
+		/*
+		 * SD initialization returns file open error or success
+		 */
+		Status = InitSD(NULL);
+		if (Status != XST_SUCCESS) {
+			fsbl_printf(DEBUG_GENERAL,"SD_INIT_FAIL\r\n");
+			OutputStatus(SD_INIT_FAIL);
+			FsblFallback();
 		}
-		else
-		{/*
-			* SD initialization returns file open error or success
-			*/
-			Status = InitSD(NULL);
-			if (Status != XST_SUCCESS) {
-				fsbl_printf(DEBUG_GENERAL,"SD_INIT_FAIL\r\n");
-				OutputStatus(SD_INIT_FAIL);
-				FsblFallback();
-			}
-			MoveImage = SDAccess;
-			fsbl_printf(DEBUG_INFO,"SD Init Done \r\n");			
-		}
-		
+		MoveImage = SDAccess;
+		fsbl_printf(DEBUG_INFO,"SD Init Done \r\n");
 	} else
 
 //	if (BootModeRegister == MMC_MODE) {
@@ -551,7 +577,7 @@ int main(void)
 	
 	fsbl_printf(DEBUG_GENERAL,"Zero memory - addr:0x10000008 val:%x\r\n", Xil_In32(0x10000008));
 
-	Status = InitSD("/mp/fpga.bin");
+	Status = InitSD("fpga.bin");
 	if (Status != XST_SUCCESS) {
 		fsbl_printf(DEBUG_GENERAL,"SD/MMC INIT_FAIL - fpga.bin\r\n");
 //		OutputStatus(SD_INIT_FAIL);
@@ -569,7 +595,7 @@ int main(void)
 	}
 	else {
 		/* Load u-boot from SD/MMC */
-		Status = InitSD("/mp/uboot.bin");
+		Status = InitSD("uboot.bin");
 		if (Status != XST_SUCCESS) {
 			fsbl_printf(DEBUG_GENERAL,"SD/MMC INIT_FAIL - uboot.bin\r\n")
 		}
@@ -623,7 +649,6 @@ int main(void)
 	OutputStatus(NO_DDR);
 	FsblFallback();
 #endif
-
 
 	return Status;
 }

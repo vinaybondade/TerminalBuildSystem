@@ -189,7 +189,7 @@ u32 FsblHookBeforeHandoff(void)
 		return (Status);
 	}
 
-	if(initSDFile("/mp/mb.bin") != XST_SUCCESS) {
+	if(initSDFile("mb.bin") != XST_SUCCESS) {
 		xil_printf("\rSD/MMC INIT_FAIL - mb.bin\r\n");
 		Xil_Out32(PS_DDR_MBBOOT_FILE_ADDR, PS_DDR_MBBOOT_FILE_NOT_EXIST);
 	}
