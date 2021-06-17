@@ -129,7 +129,7 @@ void main_loop(void)
 
 	*mem_add_r1 = 0x0;
 
-	setenv("mmcboot", "ext4load mmc 0:1 0x2000000 zynq-zed.dtb && ext4load mmc 0:1 0x2080000 zImage && ext4load mmc 0:1 0x4000000 zedboard-ramdisk.img && bootz 0x2080000 0x4000000 0x2000000");
+	setenv("mmcboot", "fatload mmc 0:1 0x2000000 zynq-zed.dtb && fatload mmc 0:1 0x2080000 zImage && fatload mmc 0:1 0x4000000 zedboard-ramdisk.img && bootz 0x2080000 0x4000000 0x2000000");
 
 	setenv("qspiboot", "sf probe && sf read 0x2000000 0xE00000 0x20000 && sf read 0x2080000 0x100000 0x400000 && sf read 0x4000000 0x500000 0x900000 && bootz 0x2080000 0x4000000 0x2000000");
 

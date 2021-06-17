@@ -1,7 +1,7 @@
 #include <common.h>
 #include <command.h>
 #include <part.h>
-#include <ext4fs.h>
+#include <fat.h>
 #include <fs.h>
 #include <linux/string.h>
 #include <u-boot/md5.h>
@@ -15,24 +15,24 @@
 
 static ulong file_size(char *filename)
 {
-    // Find the command pointer for 'ext4size' command.
-    cmd_tbl_t *cmdPtr = find_cmd("ext4size");
-    char * const ext4size_cmd[6] = { "ext4size", "mmc", "0:1", filename , NULL };
+    // Find the command pointer for 'fatsize' command.
+    cmd_tbl_t *cmdPtr = find_cmd("fatsize");
+    char * const fatsize_cmd[6] = { "fatsize", "mmc", "0:1", filename , NULL };
     ulong size = 0;
 
     // command pointer sanity check
     if(!cmdPtr){
-        printf("Failed to find ext4size command.\n");
+        printf("Failed to find fatsize command.\n");
         return 0;
     }
 
-    // Execute 'ext4size' command
-    if (cmdPtr->cmd(cmdPtr, 0, 4, ext4size_cmd) < 0) {
+    // Execute 'fatsize' command
+    if (cmdPtr->cmd(cmdPtr, 0, 4, fatsize_cmd) < 0) {
         printf ("Failed to get size of %s file.\n", filename);
         return 0;
     }
 
-    // Convert from Ascii to hex value. 'ext4size' command stores the filesize as env variable.
+    // Convert from Ascii to hex value. 'fatsize' command stores the filesize as env variable.
     size = getenv_hex("filesize", 0);
 
     return size;
@@ -60,8 +60,8 @@ static int hex_to_val(const char ch)
 
 int md5_check(char *filename, char* md5_filename, char *load_addr)
 {
-    char * const ext4load_image_cmd[6] = { "ext4load", "mmc", "0:1", load_addr, filename, NULL };
-    char * const ext4load_md5_cmd[6] = { "ext4load", "mmc", "0:1", "0x2040000", md5_filename, NULL };
+    char * const fatload_image_cmd[6] = { "fatload", "mmc", "0:1", load_addr, filename, NULL };
+    char * const fatload_md5_cmd[6] = { "fatload", "mmc", "0:1", "0x2040000", md5_filename, NULL };
     unsigned char md5_actual[MD5SUM_SIZE];
     unsigned char md5_expected[MD5SUM_SIZE];
     cmd_tbl_t *cmdPtr = NULL;
@@ -71,10 +71,10 @@ int md5_check(char *filename, char* md5_filename, char *load_addr)
     int i = 0;
     int j = 0;
 
-    // Get command pointer for 'ext4load' command.
-    cmdPtr = find_cmd("ext4load");
+    // Get command pointer for 'fatload' command.
+    cmdPtr = find_cmd("fatload");
     if(!cmdPtr){
-        printf("Failed to find ext4load command.\n");
+        printf("Failed to find fatload command.\n");
         return -1;
     }
 
@@ -85,7 +85,7 @@ int md5_check(char *filename, char* md5_filename, char *load_addr)
     }
 
     // Load the desired file to memory to compute md5sum
-    if (cmdPtr->cmd(cmdPtr, 0, 5, ext4load_image_cmd) < 0) {
+    if (cmdPtr->cmd(cmdPtr, 0, 5, fatload_image_cmd) < 0) {
         printf ("Failed to load %d.\n", filename);
         return -1;
     }
@@ -99,7 +99,7 @@ int md5_check(char *filename, char* md5_filename, char *load_addr)
 
     // verify the calculated md5value.
     // Load md5 file to RAM
-    if (cmdPtr->cmd(cmdPtr, 0, 5, ext4load_md5_cmd) < 0) {
+    if (cmdPtr->cmd(cmdPtr, 0, 5, fatload_md5_cmd) < 0) {
         printf ("Failed to load md5 file.\n", md5_filename);
         return -1;
     }
