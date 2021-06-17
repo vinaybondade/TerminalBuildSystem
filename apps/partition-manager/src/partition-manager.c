@@ -8,10 +8,17 @@
 #define CMD_CREATE_PARMETERS_PARTITION      "--create-parameters-partition"
 #define CMD_QUICKFORMAT_EMMC                "--quick-format-emmc"
 #define CMD_DELETE_PARTITION                "--delete-partition"
+#define CMD_SAVE_MBR                        "--save-mbr"
+#define CMD_RESTORE_MBR                     "--restore-mbr"
 #define CMD_SHOW_PARTITIONS                 "--show-partitions"
 #define FIRMWARE_PARTITION                  "/dev/mmcblk0p1"
 #define RCPFILE_PARTITION                   "/dev/mmcblk0p2"
 #define EMMC_BLK_DEVICE                     "/dev/mmcblk0"
+
+#define EMMC_SIZE                           3850371072 // 3672 MB
+#define SECTOR_SIZE                         512
+#define EMMC_END                            3670 // We leave some space (2MB) at the end of emmc unused, we keep MBR backup here
+
 
 int cmd_create_firmware_partition(int argc, char*argv[])
 {
@@ -32,7 +39,19 @@ int cmd_create_firmware_partition(int argc, char*argv[])
         strncpy(cmdParams[9], argv[2], strlen(argv[2]));
     }
     else
-        sprintf(cmdParams[9], "%d", DEFAULT_PARTITION_SIZE);    
+        sprintf(cmdParams[9], "%d", DEFAULT_PARTITION_SIZE); 
+
+    // Check if the size goes beyong the allowed boundary   
+    unsigned int endAddr = strtol(cmdParams[10], NULL, 10);
+    if(!endAddr){
+        printf("Invalid size.\n");
+        return -1;
+    }
+
+    if(endAddr >= EMMC_END){
+        printf("Given size is beyond allowed size. Check the partitions' size.\n");
+        return -1;
+    }
 
     sprintf(cmd, "%s %s %s %s %s %s %s %s %s %s", cmdParams[0], cmdParams[1], cmdParams[2], cmdParams[3],
      cmdParams[4], cmdParams[5], cmdParams[6], cmdParams[7], cmdParams[8], cmdParams[9]);
@@ -83,8 +102,8 @@ int cmd_create_parameters_partition(int argc, char*argv[])
 {
     char cmdParams[10][256] = { "parted", EMMC_BLK_DEVICE, "-s", "-a", "none", "mkpart", "primary", "ext4", "0", "0"};
     const uint32_t PARTITION_SIZE = 260; // 300 MB
-    const uint32_t DEFAULT_PARTITION_SIZE = 2000; // 2Gigabytes
-    const uint32_t DEFAULT_PARTITION_BUFFER_BYTES = 269; // 260 MB
+    const uint32_t DEFAULT_PARTITION_SIZE = 300; // 2Gigabytes
+    const uint32_t DEFAULT_PARTITION_BUFFER_BYTES = 300; // 260 MB
     char cmd[256];
     char size[32];
 
@@ -121,7 +140,13 @@ int cmd_create_parameters_partition(int argc, char*argv[])
     startAddr += DEFAULT_PARTITION_BUFFER_BYTES;
     printf("startAddr - %d\n", startAddr);
     endAddr = startAddr + strtol(size, NULL, 10);
-    printf("endAddr - %d\n", endAddr);
+    printf("endAddr - %d\n", endAddr); 
+
+    // Check if the size goes beyong the allowed boundary   
+    if(endAddr >= EMMC_END){
+        printf("Given size is beyond allowed size. Check the partitions' size.\n");
+        return -1;
+    }
 
     sprintf(cmd, "%s %s %s %s %s %s %s %s %d %d", cmdParams[0], cmdParams[1], cmdParams[2], cmdParams[3],
      cmdParams[4], cmdParams[5], cmdParams[6], cmdParams[7], startAddr, endAddr);
@@ -179,6 +204,50 @@ int cmd_quick_format_emmc(int argc, char*argv[])
     return 0;
 }
 
+int cmd_save_mbr(int argc, char*argv[])
+{
+    const char *binFile = "/tmp/mbr.bin";
+    char cmd1[255];
+    sprintf(cmd1, "dd if=%s of=%s bs=512 count=2", EMMC_BLK_DEVICE, binFile);
+
+    if(system(cmd1) != 0){
+        printf("Failed to read MBR.\n");
+        return -1;
+    }
+
+    char cmd2[255];
+    sprintf(cmd2, "dd if=%s of=%s bs=512 count=2 seek=%lld", binFile, EMMC_BLK_DEVICE, (EMMC_SIZE/SECTOR_SIZE)-2);
+
+    if(system(cmd2) != 0){
+        printf("Failed to backup MBR.\n");
+        return -1;
+    }
+
+    return 0;
+}
+
+int cmd_restore_mbr(int argc, char*argv[])
+{
+    const char *binFile = "/tmp/mbr.bin";
+    char cmd1[255];
+    sprintf(cmd1, "dd if=%s of=%s bs=512 count=2 skip=%lld", EMMC_BLK_DEVICE, binFile, (EMMC_SIZE/SECTOR_SIZE)-2);
+
+    if(system(cmd1) != 0){
+        printf("Failed to backed MBR.\n");
+        return -1;
+    }
+
+    char cmd2[255];
+    sprintf(cmd2, "dd if=%s of=%s bs=512 count=2", binFile, EMMC_BLK_DEVICE);
+
+    if(system(cmd2) != 0){
+        printf("Failed to restore MBR.\n");
+        return -1;
+    }
+
+    return 0;
+}
+
 int cmd_show_partitions(int argc, char*argv[])
 {
     char cmd[256];
@@ -212,6 +281,8 @@ void print_usage()
     printf("                 %s [size in MB]\n", CMD_CREATE_FIRMWARE_PARTITION);
     printf("                 %s [size in MB]\n", CMD_CREATE_PARMETERS_PARTITION);
     printf("                 %s [Partition Index 1/2]\n", CMD_DELETE_PARTITION);
+    printf("                 %s\n", CMD_SAVE_MBR);
+    printf("                 %s\n", CMD_RESTORE_MBR);
     printf("                 %s\n", CMD_SHOW_PARTITIONS);
     printf("                 %s\n", CMD_QUICKFORMAT_EMMC);
 }
@@ -234,6 +305,12 @@ int main(int argc, char *argv[])
     }
     else if(!strncmp(CMD_QUICKFORMAT_EMMC, argv[1], strlen(CMD_QUICKFORMAT_EMMC))){
         return cmd_quick_format_emmc(argc, argv);
+    }
+    else if(!strncmp(CMD_SAVE_MBR, argv[1], strlen(CMD_SAVE_MBR))){
+        return cmd_save_mbr(argc, argv);
+    }
+    else if(!strncmp(CMD_RESTORE_MBR, argv[1], strlen(CMD_RESTORE_MBR))){
+        return cmd_restore_mbr(argc, argv);
     }
     else if(!strncmp(CMD_SHOW_PARTITIONS, argv[1], strlen(CMD_SHOW_PARTITIONS))){
         return cmd_show_partitions(argc, argv);
