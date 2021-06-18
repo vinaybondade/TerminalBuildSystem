@@ -1,0 +1,26 @@
+#!/bin/sh
+#
+# Load AD9364 drivers
+#
+
+case "$1" in
+  start)
+	insmod /lib/modules/4.9.0-xilinx/kernel/drivers/iio/buffer/industrialio-buffer-dma.ko
+	insmod /lib/modules/4.9.0-xilinx/kernel/drivers/iio/buffer/industrialio-buffer-dmaengine.ko
+	insmod /lib/modules/4.9.0-xilinx/kernel/drivers/iio/frequency/cf_axi_dds_drv.ko
+	insmod /lib/modules/4.9.0-xilinx/kernel/drivers/iio/adc/cf_axi_adc.ko
+	insmod /lib/modules/4.9.0-xilinx/kernel/drivers/iio/adc/ad9361_drv.ko
+        ;;
+  stop)
+        printf "Use Kill Application with pid"
+        ;;
+  restart|reload)
+        "$0" stop
+        "$0" start
+        ;;
+  *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+esac
+
+exit $?
