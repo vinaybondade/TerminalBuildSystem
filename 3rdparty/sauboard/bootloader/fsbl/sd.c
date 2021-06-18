@@ -166,13 +166,13 @@ u32 InitSD(const char *filename)
 ****************************************************************************/
 u32 SDAccess( u32 SourceAddress, u32 DestinationAddress, u32 LengthBytes)
 {
-
 	FRESULT rc;	 /* Result code */
 	size_t br;
-	uint32_t readBlkCount = LengthBytes / XSDPS_BLK_SIZE_512_MASK;
+	const uint32_t rdBlkSize = 1024 * 1024; // 1 MB read block chunks
+	uint32_t readBlkCount = LengthBytes / rdBlkSize;
 	uint32_t bytesToRead = LengthBytes;
 
-	if(LengthBytes % XSDPS_BLK_SIZE_512_MASK)
+	if(LengthBytes % rdBlkSize)
 		readBlkCount++;
 
 	rc = ext4_fseek(&file, SourceAddress, SEEK_SET);
@@ -182,15 +182,15 @@ u32 SDAccess( u32 SourceAddress, u32 DestinationAddress, u32 LengthBytes)
 	}
 
 	while(readBlkCount--){
-		if(bytesToRead > XSDPS_BLK_SIZE_512_MASK){
-			rc = ext4_fread(&file, (void *)DestinationAddress, XSDPS_BLK_SIZE_512_MASK, &br);
-			bytesToRead -= XSDPS_BLK_SIZE_512_MASK;
+		if(bytesToRead > rdBlkSize){
+			rc = ext4_fread(&file, (void *)DestinationAddress, rdBlkSize, &br);
+			bytesToRead -= rdBlkSize;
 		}
 		else{
 			rc = ext4_fread(&file, (void *)DestinationAddress, bytesToRead, &br);
 			bytesToRead -= bytesToRead;
 		}
-		DestinationAddress += XSDPS_BLK_SIZE_512_MASK;
+		DestinationAddress += rdBlkSize;
 
 		if (rc) {
 			fsbl_printf(DEBUG_GENERAL,"*** ERROR: f_read returned %d\r\n", rc);

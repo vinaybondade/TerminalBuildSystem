@@ -47,11 +47,12 @@ static int file_dev_open(struct ext4_blockdev *bdev)
 static int file_dev_bread(struct ext4_blockdev *bdev, void *buf, uint64_t blk_id,
 			 uint32_t blk_cnt)
 {
-    if(disk_read(driveNo, buf, blk_id, blk_cnt) != RES_OK)
-        return EIO;
+    DRESULT rc = disk_read(driveNo, buf, blk_id, blk_cnt);
+    if(rc != RES_OK)
+        return rc;
 
 
-    return EOK;
+    return RES_OK;
 }
 /******************************************************************************/
 
