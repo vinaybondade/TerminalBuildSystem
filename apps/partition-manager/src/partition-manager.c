@@ -229,9 +229,11 @@ int cmd_save_mbr(int argc, char*argv[])
 
     if(system(cmd2) != 0){
         printf("Failed to backup MBR.\n");
+        remove(binFile);
         return -1;
     }
 
+    remove(binFile);
     return 0;
 }
 
@@ -251,9 +253,12 @@ int cmd_restore_mbr(int argc, char*argv[])
 
     if(system(cmd2) != 0){
         printf("Failed to restore MBR.\n");
+        remove(binFile);
         return -1;
     }
 
+
+    remove(binFile);
     return 0;
 }
 
@@ -274,6 +279,8 @@ int cmd_validate_mbr(int argc, char*argv[])
 
     if(system(cmd2) != 0){
         printf("Failed to read backed MBR.\n");
+        remove(origBinFile);
+        remove(backedBinFile);
         return -1;
     }
 
@@ -281,11 +288,15 @@ int cmd_validate_mbr(int argc, char*argv[])
     int diff = compare_files(origBinFile, backedBinFile);
     if(diff){
         printf("MBR not valid.\n");
+        remove(origBinFile);
+        remove(backedBinFile);
         return -1;
     }
 
     printf("MBR valid.\n");
 
+    remove(origBinFile);
+    remove(backedBinFile);
     return 0;
 }
 
