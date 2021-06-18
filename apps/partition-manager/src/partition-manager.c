@@ -258,20 +258,6 @@ int cmd_show_partitions(int argc, char*argv[])
         return -1;
     }
 
-    // Perform label init
-    sprintf(cmd, "parted "EMMC_BLK_DEVICE" -s -a none mklabel msdos");
-
-    if(system(cmd) != 0){
-        printf("EMMC setting label failed.\n");
-        return -1;
-    }
-    sprintf(cmd, "parted "EMMC_BLK_DEVICE" -s -a none mklabel msdos");
-
-    if(system(cmd) != 0){
-        printf("EMMC setting label failed.\n");
-        return -1;
-    }
-
     return 0;
 }
 
