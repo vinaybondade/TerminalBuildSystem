@@ -10,6 +10,7 @@
 #define CMD_DELETE_PARTITION                "--delete-partition"
 #define CMD_SAVE_MBR                        "--save-mbr"
 #define CMD_RESTORE_MBR                     "--restore-mbr"
+#define CMD_VALIDATE_MBR                    "--validate-mbr"
 #define CMD_SHOW_PARTITIONS                 "--show-partitions"
 #define FIRMWARE_PARTITION                  "/dev/mmcblk0p1"
 #define RCPFILE_PARTITION                   "/dev/mmcblk0p2"
@@ -19,6 +20,7 @@
 #define SECTOR_SIZE                         512
 #define EMMC_END                            3670 // We leave some space (2MB) at the end of emmc unused, we keep MBR backup here
 
+int compare_files(const char *file1, const char *file2);
 
 int cmd_create_firmware_partition(int argc, char*argv[])
 {
@@ -255,6 +257,69 @@ int cmd_restore_mbr(int argc, char*argv[])
     return 0;
 }
 
+int cmd_validate_mbr(int argc, char*argv[])
+{
+    const char *origBinFile = "/tmp/mbr_ori.bin";
+    char cmd1[255];
+    sprintf(cmd1, "dd if=%s of=%s bs=512 count=2", EMMC_BLK_DEVICE, origBinFile);
+
+    if(system(cmd1) != 0){
+        printf("Failed to read MBR.\n");
+        return -1;
+    }
+
+    const char *backedBinFile = "/tmp/mbr_bk.bin";
+    char cmd2[255];
+    sprintf(cmd2, "dd if=%s of=%s bs=512 count=2 skip=%lld", EMMC_BLK_DEVICE, backedBinFile, (EMMC_SIZE/SECTOR_SIZE)-2);
+
+    if(system(cmd2) != 0){
+        printf("Failed to read backed MBR.\n");
+        return -1;
+    }
+
+    // compare the files
+    int diff = compare_files(origBinFile, backedBinFile);
+    if(diff){
+        printf("MBR not valid.\n");
+        return -1;
+    }
+
+    printf("MBR valid.\n");
+
+    return 0;
+}
+
+int compare_files(const char *file1, const char *file2)
+{
+    char ch1, ch2;
+    FILE *fPtr1 = fopen(file1, "rb");
+    FILE *fPtr2 = fopen(file2, "rb");
+
+    if(!fPtr1 || !fPtr2){
+        printf("Failed to open input files.\n");
+        return -1;
+    }
+
+    do
+    {
+        // Input character from both files
+        ch1 = fgetc(fPtr1);
+        ch2 = fgetc(fPtr2);
+
+        // If characters are not same then return -1
+        if (ch1 != ch2)
+            return -1;
+        
+    } while (ch1 != (char)EOF && ch2 != (char)EOF);
+
+
+    /* If both files have reached end */
+    if (ch1 == (char)EOF && ch2 == (char)EOF)
+        return 0;
+    else
+        return -1;
+}
+
 int cmd_show_partitions(int argc, char*argv[])
 {
     char cmd[256];
@@ -275,7 +340,7 @@ void print_usage()
     printf("                 %s [size in MB]\n", CMD_CREATE_PARMETERS_PARTITION);
     printf("                 %s [Partition Index 1/2]\n", CMD_DELETE_PARTITION);
     printf("                 %s\n", CMD_SAVE_MBR);
-    printf("                 %s\n", CMD_RESTORE_MBR);
+    printf("                 %s\n", CMD_VALIDATE_MBR);
     printf("                 %s\n", CMD_SHOW_PARTITIONS);
     printf("                 %s\n", CMD_QUICKFORMAT_EMMC);
 }
@@ -304,6 +369,9 @@ int main(int argc, char *argv[])
     }
     else if(!strncmp(CMD_RESTORE_MBR, argv[1], strlen(CMD_RESTORE_MBR))){
         return cmd_restore_mbr(argc, argv);
+    }
+    else if(!strncmp(CMD_VALIDATE_MBR, argv[1], strlen(CMD_VALIDATE_MBR))){
+        return cmd_validate_mbr(argc, argv);
     }
     else if(!strncmp(CMD_SHOW_PARTITIONS, argv[1], strlen(CMD_SHOW_PARTITIONS))){
         return cmd_show_partitions(argc, argv);
