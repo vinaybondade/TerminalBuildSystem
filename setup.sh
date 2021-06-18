@@ -15,7 +15,7 @@ export PATH
 sed -i 's;/.*/3rdparty/zedboard/images/fpga.bit;'"$HISKY_SDK_PATH/3rdparty/zedboard/images/fpga.bit"';' $HISKY_SDK_PATH/3rdparty/zedboard/images/fpga.bif
 sed -i 's;/.*/3rdparty/zedboard/images/zynq_fsbl.elf;'"$HISKY_SDK_PATH/3rdparty/zedboard/images/zynq_fsbl.elf"';' $HISKY_SDK_PATH/3rdparty/zedboard/images/fsbl.bif
 sed -i 's;/.*/3rdparty/zedboard/images/u-boot.elf;'"$HISKY_SDK_PATH/3rdparty/zedboard/images/u-boot.elf"';' $HISKY_SDK_PATH/3rdparty/zedboard/images/u-boot.bif
-sed -i 's;/.*/3rdparty/zedboard/images/fpga.bit;'"$HISKY_SDK_PATH/3rdparty/sauboard/images/fpga.bit"';' $HISKY_SDK_PATH/3rdparty/sauboard/images/fpga.bif
-sed -i 's;/.*/3rdparty/zedboard/images/zynq_fsbl.elf;'"$HISKY_SDK_PATH/3rdparty/sauboard/images/zynq_fsbl.elf"';' $HISKY_SDK_PATH/3rdparty/sauboard/images/fsbl.bif
-sed -i 's;/.*/3rdparty/zedboard/images/u-boot.elf;'"$HISKY_SDK_PATH/3rdparty/sauboard/images/u-boot.elf"';' $HISKY_SDK_PATH/3rdparty/sauboard/images/u-boot.bif
+sed -i 's;/.*/3rdparty/sauboard/images/fpga.bit;'"$HISKY_SDK_PATH/3rdparty/sauboard/images/fpga.bit"';' $HISKY_SDK_PATH/3rdparty/sauboard/images/fpga.bif
+sed -i 's;/.*/3rdparty/sauboard/images/zynq_fsbl.elf;'"$HISKY_SDK_PATH/3rdparty/sauboard/images/zynq_fsbl.elf"';' $HISKY_SDK_PATH/3rdparty/sauboard/images/fsbl.bif
+sed -i 's;/.*/3rdparty/sauboard/images/u-boot.elf;'"$HISKY_SDK_PATH/3rdparty/sauboard/images/u-boot.elf"';' $HISKY_SDK_PATH/3rdparty/sauboard/images/u-boot.bif
 
