@@ -24,8 +24,8 @@ int cmd_create_firmware_partition(int argc, char*argv[])
 {
     char cmdParams[10][256] = { "parted", EMMC_BLK_DEVICE, "-s", "-a", "none", "mkpart", "primary", "ext4", "8192B", "0" };
     char cmd[256];
-    const uint32_t DEFAULT_PARTITION_SIZE = 300; //300 Mb
-    const uint32_t MIN_PARTITION_SIZE = 260; //300 Mb
+    const uint32_t DEFAULT_PARTITION_SIZE = 350; //350 Mb
+    const uint32_t MIN_PARTITION_SIZE = 350; //350 Mb
 
     memset(cmdParams[9], 0, sizeof(cmdParams[9]));
     if(argc >= 3){
@@ -42,7 +42,7 @@ int cmd_create_firmware_partition(int argc, char*argv[])
         sprintf(cmdParams[9], "%d", DEFAULT_PARTITION_SIZE); 
 
     // Check if the size goes beyong the allowed boundary   
-    unsigned int endAddr = strtol(cmdParams[10], NULL, 10);
+    unsigned int endAddr = strtol(cmdParams[9], NULL, 10);
     if(!endAddr){
         printf("Invalid size.\n");
         return -1;
@@ -101,9 +101,9 @@ int get_firmware_partition_boundary(char *boundary, size_t len)
 int cmd_create_parameters_partition(int argc, char*argv[])
 {
     char cmdParams[10][256] = { "parted", EMMC_BLK_DEVICE, "-s", "-a", "none", "mkpart", "primary", "ext4", "0", "0"};
-    const uint32_t PARTITION_SIZE = 260; // 300 MB
-    const uint32_t DEFAULT_PARTITION_SIZE = 300; // 2Gigabytes
-    const uint32_t DEFAULT_PARTITION_BUFFER_BYTES = 300; // 260 MB
+    const uint32_t PARTITION_SIZE = 350; // 350 MB
+    const uint32_t DEFAULT_PARTITION_SIZE = 350; // 350 MB
+    const uint32_t DEFAULT_PARTITION_BUFFER_BYTES = 300; // 300 MB
     char cmd[256];
     char size[32];
 
@@ -198,6 +198,13 @@ int cmd_quick_format_emmc(int argc, char*argv[])
 
     if(system(cmd) != 0){
         printf("EMMC quick format failed.\n");
+        return -1;
+    }
+
+    // Init label
+    sprintf(cmd, "parted %s mklabel msdos", EMMC_BLK_DEVICE);
+    if(system(cmd) != 0){
+        printf("EMMC mklabel failed.\n");
         return -1;
     }
 
