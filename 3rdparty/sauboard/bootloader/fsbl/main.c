@@ -239,6 +239,7 @@ int main(void)
 	u32 HandoffAddress = 0;
 	u32 Status = XST_SUCCESS;
 	u32 rc;
+	u8	SDInitSuccess = 0;
 	/*
 	 * PCW initialization for MIO,PLL,CLK and DDR
 	 */
@@ -475,7 +476,8 @@ int main(void)
 				FsblFallback();
 			}
 			MoveImage = SDAccess;
-			fsbl_printf(DEBUG_INFO,"SD Init Done \r\n");			
+			fsbl_printf(DEBUG_INFO,"SD Init Done \r\n");	
+			SDInitSuccess = 1;		
 		}
 		
 	} else
@@ -579,34 +581,39 @@ int main(void)
 	
 	fsbl_printf(DEBUG_GENERAL,"Zero memory - addr:0x10000008 val:%x\r\n", Xil_In32(0x10000008));
 
-	Status = InitSD("/mp/fpga.bin");
-	if (Status != XST_SUCCESS) {
-		fsbl_printf(DEBUG_GENERAL,"SD/MMC INIT_FAIL - fpga.bin\r\n");
-//		OutputStatus(SD_INIT_FAIL);
-//		FsblFallback();
-	}
-	else {
-		MoveImage = SDAccess;
-		fsbl_printf(DEBUG_INFO,"SD/MMC Init Done - fpga.bin\r\n");
-		rc = LoadBootImage(0, 1, 0, &HandoffAddress);
-		ReleaseSD();
-	}
-
-	if(rc != XST_SUCCESS || Status != XST_SUCCESS) {
-		Xil_Out32(PS_DDR_SW_UPDATE_ADDR, SW_UPDATE_NEEDED);
-	}
-	else {
-		/* Load u-boot from SD/MMC */
-		Status = InitSD("/mp/uboot.bin");
+	if(SDInitSuccess){
+		Status = InitSD("/mp/fpga.bin");
 		if (Status != XST_SUCCESS) {
-			fsbl_printf(DEBUG_GENERAL,"SD/MMC INIT_FAIL - uboot.bin\r\n")
+			fsbl_printf(DEBUG_GENERAL,"SD/MMC INIT_FAIL - fpga.bin\r\n");
+	//		OutputStatus(SD_INIT_FAIL);
+	//		FsblFallback();
 		}
 		else {
 			MoveImage = SDAccess;
-			fsbl_printf(DEBUG_INFO,"SD/MMC Init Done - uboot.bin \r\n");
+			fsbl_printf(DEBUG_INFO,"SD/MMC Init Done - fpga.bin\r\n");
 			rc = LoadBootImage(0, 1, 0, &HandoffAddress);
 			ReleaseSD();
 		}
+
+		if(rc != XST_SUCCESS || Status != XST_SUCCESS) {
+			Xil_Out32(PS_DDR_SW_UPDATE_ADDR, SW_UPDATE_NEEDED);
+		}
+		else {
+			/* Load u-boot from SD/MMC */
+			Status = InitSD("/mp/uboot.bin");
+			if (Status != XST_SUCCESS) {
+				fsbl_printf(DEBUG_GENERAL,"SD/MMC INIT_FAIL - uboot.bin\r\n")
+			}
+			else {
+				MoveImage = SDAccess;
+				fsbl_printf(DEBUG_INFO,"SD/MMC Init Done - uboot.bin \r\n");
+				rc = LoadBootImage(0, 1, 0, &HandoffAddress);
+				ReleaseSD();
+			}
+		}
+	}
+	else{
+		Status = XST_FAILURE;
 	}
 
 	//fsbl_printf(DEBUG_INFO,"1111111111111111 (%x) \r\n", Xil_In32(PS_DDR_RECOVERY_ADDR));
