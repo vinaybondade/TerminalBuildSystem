@@ -1,8 +1,8 @@
-cmd_/home/yaniv/share/hiSkyDev/apps/hsmisc/hsmisc.mod.o := /home/yaniv/share/hiSkyDev/apps/hsmisc/../../3rdparty/zedboard/buildroot-bins-zedboard/host/bin/arm-linux-gnueabihf-gcc -Wp,-MD,/home/yaniv/share/hiSkyDev/apps/hsmisc/.hsmisc.mod.o.d  -nostdinc -isystem /home/yaniv/share/hiSkyDev/3rdparty/zedboard/toolchain/gcc-arm-linux-gnueabi/bin/../lib/gcc/arm-linux-gnueabihf/6.2.1/include -I./arch/arm/include -I./arch/arm/include/generated/uapi -I./arch/arm/include/generated  -I./include -I./arch/arm/include/uapi -I./include/uapi -I./include/generated/uapi -include ./include/linux/kconfig.h -D__KERNEL__ -mlittle-endian -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Wno-format-security -std=gnu89 -fno-PIE -fno-dwarf2-cfi-asm -fno-ipa-sra -mabi=aapcs-linux -mno-thumb-interwork -mfpu=vfp -funwind-tables -marm -D__LINUX_ARM_ARCH__=7 -march=armv7-a -msoft-float -Uarm -fno-delete-null-pointer-checks -Wno-frame-address -Os -Wno-maybe-uninitialized --param=allow-store-data-races=0 -Wframe-larger-than=1024 -fno-stack-protector -Wno-unused-but-set-variable -Wno-unused-const-variable -fomit-frame-pointer -fno-var-tracking-assignments -Wdeclaration-after-statement -Wno-pointer-sign -fno-strict-overflow -fconserve-stack -Werror=implicit-int -Werror=strict-prototypes -Werror=date-time -Werror=incompatible-pointer-types -DCC_HAVE_ASM_GOTO -I/home/yaniv/share/hiSkyDev/apps/hsmisc/include  -DKBUILD_BASENAME='"hsmisc.mod"'  -DKBUILD_MODNAME='"hsmisc"' -DMODULE  -c -o /home/yaniv/share/hiSkyDev/apps/hsmisc/hsmisc.mod.o /home/yaniv/share/hiSkyDev/apps/hsmisc/hsmisc.mod.c
+cmd_/home/vinay/Workspace/TerminalBuildSystem/apps/hsmisc/hsmisc.mod.o := /home/vinay/Workspace/TerminalBuildSystem/apps/hsmisc/../../3rdparty/sauboard/buildroot-bins-sauboard/host/bin/arm-linux-gnueabihf-gcc -Wp,-MD,/home/vinay/Workspace/TerminalBuildSystem/apps/hsmisc/.hsmisc.mod.o.d  -nostdinc -isystem /home/vinay/Workspace/TerminalBuildSystem/3rdparty/zedboard/toolchain/gcc-arm-linux-gnueabi/bin/../lib/gcc/arm-linux-gnueabihf/6.2.1/include -I./arch/arm/include -I./arch/arm/include/generated/uapi -I./arch/arm/include/generated  -I./include -I./arch/arm/include/uapi -I./include/uapi -I./include/generated/uapi -include ./include/linux/kconfig.h -D__KERNEL__ -mlittle-endian -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Wno-format-security -std=gnu89 -fno-PIE -fno-dwarf2-cfi-asm -fno-ipa-sra -mabi=aapcs-linux -mno-thumb-interwork -mfpu=vfp -funwind-tables -marm -D__LINUX_ARM_ARCH__=7 -march=armv7-a -msoft-float -Uarm -fno-delete-null-pointer-checks -Wno-frame-address -Os -Wno-maybe-uninitialized --param=allow-store-data-races=0 -Wframe-larger-than=1024 -fno-stack-protector -Wno-unused-but-set-variable -Wno-unused-const-variable -fomit-frame-pointer -fno-var-tracking-assignments -Wdeclaration-after-statement -Wno-pointer-sign -fno-strict-overflow -fconserve-stack -Werror=implicit-int -Werror=strict-prototypes -Werror=date-time -Werror=incompatible-pointer-types -DCC_HAVE_ASM_GOTO -I/home/vinay/Workspace/TerminalBuildSystem/apps/hsmisc/include  -DKBUILD_BASENAME='"hsmisc.mod"'  -DKBUILD_MODNAME='"hsmisc"' -DMODULE  -c -o /home/vinay/Workspace/TerminalBuildSystem/apps/hsmisc/hsmisc.mod.o /home/vinay/Workspace/TerminalBuildSystem/apps/hsmisc/hsmisc.mod.c
 
-source_/home/yaniv/share/hiSkyDev/apps/hsmisc/hsmisc.mod.o := /home/yaniv/share/hiSkyDev/apps/hsmisc/hsmisc.mod.c
+source_/home/vinay/Workspace/TerminalBuildSystem/apps/hsmisc/hsmisc.mod.o := /home/vinay/Workspace/TerminalBuildSystem/apps/hsmisc/hsmisc.mod.c
 
-deps_/home/yaniv/share/hiSkyDev/apps/hsmisc/hsmisc.mod.o := \
+deps_/home/vinay/Workspace/TerminalBuildSystem/apps/hsmisc/hsmisc.mod.o := \
     $(wildcard include/config/module/unload.h) \
   include/linux/module.h \
     $(wildcard include/config/modules.h) \
@@ -64,7 +64,7 @@ deps_/home/yaniv/share/hiSkyDev/apps/hsmisc/hsmisc.mod.o := \
     $(wildcard include/config/mmu.h) \
     $(wildcard include/config/prove/locking.h) \
     $(wildcard include/config/panic/timeout.h) \
-  /home/yaniv/share/hiSkyDev/3rdparty/zedboard/toolchain/gcc-arm-linux-gnueabi/lib/gcc/arm-linux-gnueabihf/6.2.1/include/stdarg.h \
+  /home/vinay/Workspace/TerminalBuildSystem/3rdparty/zedboard/toolchain/gcc-arm-linux-gnueabi/lib/gcc/arm-linux-gnueabihf/6.2.1/include/stdarg.h \
   include/linux/linkage.h \
   include/linux/stringify.h \
   include/linux/export.h \
@@ -446,6 +446,6 @@ deps_/home/yaniv/share/hiSkyDev/apps/hsmisc/hsmisc.mod.o := \
   include/linux/vermagic.h \
   include/generated/utsrelease.h \
 
-/home/yaniv/share/hiSkyDev/apps/hsmisc/hsmisc.mod.o: $(deps_/home/yaniv/share/hiSkyDev/apps/hsmisc/hsmisc.mod.o)
+/home/vinay/Workspace/TerminalBuildSystem/apps/hsmisc/hsmisc.mod.o: $(deps_/home/vinay/Workspace/TerminalBuildSystem/apps/hsmisc/hsmisc.mod.o)
 
-$(deps_/home/yaniv/share/hiSkyDev/apps/hsmisc/hsmisc.mod.o):
+$(deps_/home/vinay/Workspace/TerminalBuildSystem/apps/hsmisc/hsmisc.mod.o):

@@ -1,0 +1,7 @@
+0x3660385f	register_air_protocol	/home/vinay/Workspace/TerminalBuildSystem/apps/hs-modem-ku/hsmodem	EXPORT_SYMBOL_GPL
+0xe7917edb	crcSlow	/home/vinay/Workspace/TerminalBuildSystem/apps/hs-modem-ku/hsmodem	EXPORT_SYMBOL_GPL
+0x588a4a6d	hsFifo_put_user_msg	/home/vinay/Workspace/TerminalBuildSystem/apps/hs-modem-ku/hsfifo	EXPORT_SYMBOL_GPL
+0x17219689	hsFifo_get_user_msg	/home/vinay/Workspace/TerminalBuildSystem/apps/hs-modem-ku/hsfifo	EXPORT_SYMBOL_GPL
+0xec62c1b3	hsFifo_done	/home/vinay/Workspace/TerminalBuildSystem/apps/hs-modem-ku/hsfifo	EXPORT_SYMBOL_GPL
+0xe9a25b8e	unregister_air_protocol	/home/vinay/Workspace/TerminalBuildSystem/apps/hs-modem-ku/hsmodem	EXPORT_SYMBOL_GPL
+0xa77ee436	calc_num_of_frags	/home/vinay/Workspace/TerminalBuildSystem/apps/hs-modem-ku/hsmodem	EXPORT_SYMBOL_GPL

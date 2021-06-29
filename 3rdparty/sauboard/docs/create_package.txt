@@ -1,0 +1,1 @@
+petalinux-package --boot --fsbl ./images/linux/zynq_fsbl.elf --fpga ./pre-built/linux/implementation/download.bit --u-boot ./images/linux/u-boot.elf

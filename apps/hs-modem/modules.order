@@ -1,0 +1,3 @@
+kernel//home/vinay/Workspace/TerminalBuildSystem/apps/hs-modem/hsmodem.ko
+kernel//home/vinay/Workspace/TerminalBuildSystem/apps/hs-modem/lowrate.ko
+kernel//home/vinay/Workspace/TerminalBuildSystem/apps/hs-modem/hsfifo.ko

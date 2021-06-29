@@ -1,0 +1,23 @@
+#
+# scc v0.8
+# processed: Tue Jan 14 18:33:11 IST 2020
+#
+# This is a scc output file, do not edit
+#
+# _reloc_dir /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work/plnx_arm-xilinx-linux-gnueabi/linux-xlnx
+# _reloc_dir /home/yan/source/hiSky/petalinux-v2017/components/yocto/source/arm/layers/meta-openamp/recipes-kernel/linux
+# _reloc_dir /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/project-spec/meta-plnx-generated/recipes-kernel/linux
+# _reloc_dir /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/project-spec/meta-user/recipes-kernel/linux
+# _mark openamp.scc start
+# _define KFEATURE_DESCRIPTION 'OpenAMP Kernel Support'
+# _define KFEATURE_COMPATIBILITY 'arch'
+kconf /home/yan/source/hiSky/petalinux-v2017/components/yocto/source/arm/layers/meta-openamp/recipes-kernel/linux/config/openamp.cfg # non-hardware
+# _mark openamp.scc end
+kconf /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/build/tmp/work/plnx_arm-xilinx-linux-gnueabi/linux-xlnx/4.9-xilinx-v2017.4+gitAUTOINC+b450e900fd-r0/defconfig # non-hardware
+# _mark openamp.scc start
+# _define KFEATURE_DESCRIPTION 'OpenAMP Kernel Support'
+# _define KFEATURE_COMPATIBILITY 'arch'
+kconf /home/yan/source/hiSky/petalinux-v2017/components/yocto/source/arm/layers/meta-openamp/recipes-kernel/linux/config/openamp.cfg # non-hardware
+# _mark openamp.scc end
+kconf /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/project-spec/meta-plnx-generated/recipes-kernel/linux/configs/plnx_kernel.cfg # non-hardware
+kconf /home/yan/source/hiSky/avnet-digilent-zedboard-2017.4/project-spec/meta-user/recipes-kernel/linux/linux-xlnx/bsp.cfg # non-hardware
