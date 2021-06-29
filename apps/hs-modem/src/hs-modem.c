@@ -101,41 +101,7 @@ static const uint32_t max_minor = 1;
 
 static bool constDataFlag = false;
 
-typedef struct __attribute__ ((__packed__)) lrSegAnalyze_t
-{
-	lrHeader_t cmnHdr;
-	struct __attribute__ ((__packed__)){
-		unsigned fragEn			: 1;
-		unsigned tbd			: 2;
-		unsigned msgType		: 5;
-	}segHeaderBits;
-
-	uint8_t	segLen;
-	uint8_t fusionId;
-}lrSegAnalyze_t;
-
-typedef struct __attribute__ ((__packed__)) lrFregAnalyze_t
-{
-	lrHeader_t cmnHdr;
-	struct __attribute__ ((__packed__)){
-		unsigned fragEn			: 1;
-		unsigned tbd			: 2;
-		unsigned msgType		: 5;
-	}segHeaderBits;
-
-	uint8_t	fragHeaderByte;
-	
-	struct __attribute__ ((__packed__)){
-		unsigned fragEn			: 1;
-		unsigned firstLast		: 2;
-		unsigned msgType		: 5;
-	}fragHeaderBits;
-
-	uint8_t	segLen;
-	uint8_t fusionId;
-}lrFregAnalyze_t;
-
-static uint8_t currFregTxServiceId, currFregRxServiceId; //  Current fregment service ID 
+static uint8_t currFragTxServiceId, currFragRxServiceId; //  Current fragment service ID 
 
 /* ----------------------------
  *    device I/O and types
@@ -315,49 +281,37 @@ static ssize_t sysfs_stat_read(struct device *dev, char *buf,
 			val = hsModem->stat.apStat.adminTx.numOfBytes;
 			break;
 		case SYSFS_STAT_ADMIN_TX_SEG:
-			val = hsModem->stat.apStat.adminTx.numOfFullSeg;
+			val = hsModem->stat.apStat.adminTx.numOfSeg;
 			break;
-		case SYSFS_STAT_ADMIN_TX_PART_SEG:
-			val = hsModem->stat.apStat.adminTx.numOfPartialSeg;
-			break;
-		case SYSFS_STAT_ADMIN_TX_FREG:
-			val = hsModem->stat.apStat.adminTx.numOfFreg;
+		case SYSFS_STAT_ADMIN_TX_FRAG:
+			val = hsModem->stat.apStat.adminTx.numOfFrag;
 			break;
 		case SYSFS_STAT_ADMIN_RX_BYTES:
 			val = hsModem->stat.apStat.adminRx.numOfBytes;
 			break;
 		case SYSFS_STAT_ADMIN_RX_SEG:
-			val = hsModem->stat.apStat.adminRx.numOfFullSeg;
+			val = hsModem->stat.apStat.adminRx.numOfSeg;
 			break;
-		case SYSFS_STAT_ADMIN_RX_PART_SEG:
-			val = hsModem->stat.apStat.adminRx.numOfPartialSeg;
-			break;
-		case SYSFS_STAT_ADMIN_RX_FREG:
-			val = hsModem->stat.apStat.adminRx.numOfFreg;
+		case SYSFS_STAT_ADMIN_RX_FRAG:
+			val = hsModem->stat.apStat.adminRx.numOfFrag;
 			break;
 		case SYSFS_STAT_UDP_TX_BYTES:
 			val = hsModem->stat.apStat.udpTx.numOfBytes;
 			break;
 		case SYSFS_STAT_UDP_TX_SEG:
-			val = hsModem->stat.apStat.udpTx.numOfFullSeg;
+			val = hsModem->stat.apStat.udpTx.numOfSeg;
 			break;
-		case SYSFS_STAT_UDP_TX_PART_SEG:
-			val = hsModem->stat.apStat.udpTx.numOfPartialSeg;
-			break;
-		case SYSFS_STAT_UDP_TX_FREG:
-			val = hsModem->stat.apStat.udpTx.numOfFreg;
+		case SYSFS_STAT_UDP_TX_FRAG:
+			val = hsModem->stat.apStat.udpTx.numOfFrag;
 			break;
 		case SYSFS_STAT_UDP_RX_BYTES:
 			val = hsModem->stat.apStat.udpRx.numOfBytes;
 			break;
 		case SYSFS_STAT_UDP_RX_SEG:
-			val = hsModem->stat.apStat.udpRx.numOfFullSeg;
+			val = hsModem->stat.apStat.udpRx.numOfSeg;
 			break;
-		case SYSFS_STAT_UDP_RX_PART_SEG:
-			val = hsModem->stat.apStat.udpRx.numOfPartialSeg;
-			break;
-		case SYSFS_STAT_UDP_RX_FREG:
-			val = hsModem->stat.apStat.udpRx.numOfFreg;
+		case SYSFS_STAT_UDP_RX_FRAG:
+			val = hsModem->stat.apStat.udpRx.numOfFrag;
 			break;
 		default:
 			return -EINVAL;
@@ -391,38 +345,30 @@ static struct attribute *hsModem_attrs_stat[] = {
 
 DEFINE_RO_STAT_ATTR_AND_FUNC(admin_tx_bytes, SYSFS_STAT_ADMIN_TX_BYTES);
 DEFINE_RO_STAT_ATTR_AND_FUNC(admin_tx_seg, SYSFS_STAT_ADMIN_TX_SEG);
-DEFINE_RO_STAT_ATTR_AND_FUNC(admin_tx_part_seg, SYSFS_STAT_ADMIN_TX_PART_SEG);
-DEFINE_RO_STAT_ATTR_AND_FUNC(admin_tx_freg, SYSFS_STAT_ADMIN_TX_FREG);
+DEFINE_RO_STAT_ATTR_AND_FUNC(admin_tx_frag, SYSFS_STAT_ADMIN_TX_FRAG);
 DEFINE_RO_STAT_ATTR_AND_FUNC(admin_rx_bytes, SYSFS_STAT_ADMIN_RX_BYTES);
 DEFINE_RO_STAT_ATTR_AND_FUNC(admin_rx_seg, SYSFS_STAT_ADMIN_RX_SEG);
-DEFINE_RO_STAT_ATTR_AND_FUNC(admin_rx_part_seg, SYSFS_STAT_ADMIN_RX_PART_SEG);
-DEFINE_RO_STAT_ATTR_AND_FUNC(admin_rx_freg, SYSFS_STAT_ADMIN_RX_FREG);
+DEFINE_RO_STAT_ATTR_AND_FUNC(admin_rx_frag, SYSFS_STAT_ADMIN_RX_FRAG);
 DEFINE_RO_STAT_ATTR_AND_FUNC(udp_tx_bytes, SYSFS_STAT_UDP_TX_BYTES);
 DEFINE_RO_STAT_ATTR_AND_FUNC(udp_tx_seg, SYSFS_STAT_UDP_TX_SEG);
-DEFINE_RW_STAT_ATTR_AND_FUNC(udp_tx_part_seg, SYSFS_STAT_UDP_TX_PART_SEG);
-DEFINE_RW_STAT_ATTR_AND_FUNC(udp_tx_freg, SYSFS_STAT_UDP_TX_FREG);
+DEFINE_RW_STAT_ATTR_AND_FUNC(udp_tx_frag, SYSFS_STAT_UDP_TX_FRAG);
 DEFINE_RO_STAT_ATTR_AND_FUNC(udp_rx_bytes, SYSFS_STAT_UDP_RX_BYTES);
 DEFINE_RO_STAT_ATTR_AND_FUNC(udp_rx_seg, SYSFS_STAT_UDP_RX_SEG);
-DEFINE_RO_STAT_ATTR_AND_FUNC(udp_rx_part_seg, SYSFS_STAT_UDP_RX_PART_SEG);
-DEFINE_RO_STAT_ATTR_AND_FUNC(udp_rx_freg, SYSFS_STAT_UDP_RX_FREG);
+DEFINE_RO_STAT_ATTR_AND_FUNC(udp_rx_frag, SYSFS_STAT_UDP_RX_FRAG);
 
 static struct attribute *hsModem_attrs_service[] = {
 	&DEV_ATTR(admin_tx_bytes).attr,
 	&DEV_ATTR(admin_tx_seg).attr,
-	&DEV_ATTR(admin_tx_part_seg).attr,
-	&DEV_ATTR(admin_tx_freg).attr,
+	&DEV_ATTR(admin_tx_frag).attr,
 	&DEV_ATTR(admin_rx_bytes).attr,
 	&DEV_ATTR(admin_rx_seg).attr,
-	&DEV_ATTR(admin_rx_part_seg).attr,
-	&DEV_ATTR(admin_rx_freg).attr,
+	&DEV_ATTR(admin_rx_frag).attr,
 	&DEV_ATTR(udp_tx_bytes).attr,
 	&DEV_ATTR(udp_tx_seg).attr,
-	&DEV_ATTR(udp_tx_part_seg).attr,
-	&DEV_ATTR(udp_tx_freg).attr,
+	&DEV_ATTR(udp_tx_frag).attr,
 	&DEV_ATTR(udp_rx_bytes).attr,
 	&DEV_ATTR(udp_rx_seg).attr,
-	&DEV_ATTR(udp_rx_part_seg).attr,
-	&DEV_ATTR(udp_rx_freg).attr,
+	&DEV_ATTR(udp_rx_frag).attr,
 	NULL,
 };
 
@@ -2049,12 +1995,104 @@ static void init_lr_service_counters(struct hsModem_t* hsModem)
 	memset(&hsModem->stat, 0, sizeof(hsModem->stat));	
 }
 
+uint8_t* get_next_segment(uint8_t* pCurrSegment)
+{
+	lrSegMsg_t* pSeg = (lrSegMsg_t*)pCurrSegment;
+	lrFragMsg_t* pFrag = (lrFragMsg_t*)pCurrSegment;
+
+	if(pSeg->header.fragHeaderBits.fragEn == 0)
+	{
+		return (pSeg->pData + pSeg->header.segLen);
+	}
+	else
+	{
+		return (pFrag->pData + pFrag->header.segHeader.segLen);
+	}
+}
+
+static void update_lr_service_counters_parser(uint8_t *satMsg, serviceStat_t *adminCnt, serviceStat_t *udpCnt, uint8_t *currFragServiceId)
+{
+	uint8_t *pCurrentSeg, fragDone = 0, i = 0;
+	lrSegMsg_t *pSegMsg;
+	lrFragMsg_t *pFragMsg;
+	lrAirMsg_t *pAirMsg;
+
+	pAirMsg = (lrAirMsg_t *)satMsg;
+
+	pCurrentSeg = pAirMsg->pData;
+
+	for(i = 0; i < pAirMsg->header.numOfSeg; i++)
+	{
+		pSegMsg = (lrSegMsg_t *)pCurrentSeg;
+		pFragMsg = (lrFragMsg_t*)pCurrentSeg;
+
+		if(pFragMsg->header.segHeader.segHeaderBits.msgType != SAT_MSG_ID_DATA)
+		{			
+			pCurrentSeg = get_next_segment(pCurrentSeg); 
+
+			if(pCurrentSeg == NULL)
+			{
+				return;
+			}
+
+			continue;
+		}
+
+		if(pFragMsg->header.segHeader.segHeaderBits.fragEn)
+		{
+			if(pFragMsg->header.segHeader.fragHeaderBits.firstLast ==  SAT_FIRST_FRAG)
+			{
+				*currFragServiceId = pFragMsg->pData[0];
+			} 
+			else if (pFragMsg->header.segHeader.fragHeaderBits.firstLast == SAT_LAST_FRAG) 
+			{
+				fragDone = 1;
+			}
+
+			if(*currFragServiceId == TERM_SERVICE_CORE_ADMIN)
+			{
+				adminCnt->numOfBytes += pFragMsg->header.segHeader.segLen;
+				adminCnt->numOfSeg += 1;
+				if(fragDone == 1)
+				{
+					adminCnt->numOfFrag += 1;
+				}
+			} 
+			else if(*currFragServiceId == TERM_SERVICE_USER_UDP)
+			{
+				udpCnt->numOfBytes += pFragMsg->header.segHeader.segLen;
+				udpCnt->numOfSeg += 1;
+				if(fragDone == 1)
+				{
+					udpCnt->numOfFrag += 1;
+				}
+			}
+		}
+		else
+		{
+			if(pSegMsg->pData[0] == TERM_SERVICE_CORE_ADMIN)
+			{
+				adminCnt->numOfBytes += pFragMsg->header.segHeader.segLen;
+				adminCnt->numOfSeg += 1;
+			} 
+			else if(pSegMsg->pData[0] == TERM_SERVICE_USER_UDP)
+			{
+				udpCnt->numOfBytes += pFragMsg->header.segHeader.segLen;
+				udpCnt->numOfSeg += 1;
+			}
+		}
+
+		pCurrentSeg = get_next_segment(pCurrentSeg); 
+
+		if(pCurrentSeg == NULL)
+		{
+			return;
+		}
+	}
+}
+
 static void update_lr_service_counters(struct hsModem_t* hsModem, linkDir_t dir)
 {
-	lrSegAnalyze_t *pLrSegAnalyze;
-	lrFregAnalyze_t *pLrFregAnalyze;
-	uint8_t fregDone = 0;
-
 	if(dir == LINK_DIR_TX)
 	{
 		if(hsModem->ctx.satMsgTx == NULL)
@@ -2062,60 +2100,10 @@ static void update_lr_service_counters(struct hsModem_t* hsModem, linkDir_t dir)
 			return;
 		}
 
-		pLrSegAnalyze = (lrSegAnalyze_t*)hsModem->ctx.satMsgTx;
-		pLrFregAnalyze = (lrFregAnalyze_t*)hsModem->ctx.satMsgTx;
-
-		if(pLrSegAnalyze->cmnHdr.typeHeader != SAT_MSG_ID_DATA)
-		{			
-			return; 
-		}
-
-		if(pLrSegAnalyze->segHeaderBits.fragEn)
-		{
-			//FREGMENT
-			if(pLrFregAnalyze->fragHeaderBits.firstLast == SAT_FIRST_FRAG) //first segment
-			{
-				currFregTxServiceId = pLrFregAnalyze->fusionId;
-			} 
-			else if (pLrFregAnalyze->fragHeaderBits.firstLast == SAT_LAST_FRAG) 
-			{
-				fregDone = 1;
-			}
-
-			if(currFregTxServiceId == TERM_SERVICE_CORE_ADMIN)
-			{
-				hsModem->stat.apStat.adminTx.numOfBytes += pLrFregAnalyze->segLen;
-				hsModem->stat.apStat.adminTx.numOfFullSeg += 1;
-				// hsModem->stat.apStat.adminTx.numOfPartialSeg += 1;
-				if(fregDone == 1)
-				{
-					hsModem->stat.apStat.adminTx.numOfFreg += 1;
-				}
-			} 
-			else if(currFregTxServiceId == TERM_SERVICE_USER_UDP)
-			{
-				hsModem->stat.apStat.udpTx.numOfBytes += pLrFregAnalyze->segLen;
-				hsModem->stat.apStat.udpTx.numOfFullSeg += 1;
-				// hsModem->stat.apStat.udpTx.numOfPartialSeg += 1;
-				if(fregDone == 1)
-				{
-					hsModem->stat.apStat.udpTx.numOfFreg += 1;
-				}
-			}
-		} else {
-			//SEGMENT
-			if(pLrSegAnalyze->fusionId == TERM_SERVICE_CORE_ADMIN)
-			{
-				hsModem->stat.apStat.adminTx.numOfBytes += pLrSegAnalyze->segLen;
-				hsModem->stat.apStat.adminTx.numOfFullSeg += 1;
-				// hsModem->stat.apStat.adminTx.numOfPartialSeg; //tbd
-			} else if(pLrSegAnalyze->fusionId == TERM_SERVICE_USER_UDP)
-			{
-				hsModem->stat.apStat.udpTx.numOfBytes += pLrSegAnalyze->segLen;
-				hsModem->stat.apStat.udpTx.numOfFullSeg += 1;
-				// hsModem->stat.apStat.udpTx.numOfPartialSeg += 1; //tbd
-			}
-		}
+		return update_lr_service_counters_parser( 	 hsModem->ctx.satMsgTx, 
+													&hsModem->stat.apStat.adminTx,
+													&hsModem->stat.apStat.udpTx, 
+													&currFragTxServiceId	);
 	}
 	else if(dir == LINK_DIR_RX)
 	{
@@ -2124,60 +2112,9 @@ static void update_lr_service_counters(struct hsModem_t* hsModem, linkDir_t dir)
 			return;
 		}
 
-		pLrSegAnalyze = (lrSegAnalyze_t*)hsModem->ctx.satMsgRx;
-		pLrFregAnalyze = (lrFregAnalyze_t*)hsModem->ctx.satMsgRx;
-
-		if(pLrSegAnalyze->cmnHdr.typeHeader != SAT_MSG_ID_DATA)
-		{		
-			return; 
-		}
-
-		if(pLrSegAnalyze->segHeaderBits.fragEn)
-		{
-			//FREGMENT : first segment
-			if(pLrFregAnalyze->fragHeaderBits.firstLast == SAT_FIRST_FRAG)
-			{
-				currFregRxServiceId = pLrFregAnalyze->fusionId;
-			}
-			else if (pLrFregAnalyze->fragHeaderBits.firstLast == SAT_LAST_FRAG) 
-			{
-				fregDone = 1;
-			}
-
-			if(currFregRxServiceId == TERM_SERVICE_CORE_ADMIN)
-			{
-				hsModem->stat.apStat.adminRx.numOfBytes += pLrFregAnalyze->segLen;
-				hsModem->stat.apStat.adminRx.numOfFullSeg += 1;
-				// hsModem->stat.apStat.adminTx.numOfPartialSeg += 1;
-				if(fregDone == 1)
-				{
-					hsModem->stat.apStat.udpRx.numOfFreg += 1;
-				}
-			} 
-			else if(currFregRxServiceId == TERM_SERVICE_USER_UDP)
-			{
-				hsModem->stat.apStat.udpRx.numOfBytes += pLrFregAnalyze->segLen;
-				hsModem->stat.apStat.udpRx.numOfFullSeg += 1;
-				// hsModem->stat.apStat.udpTx.numOfPartialSeg += 1;
-				if(fregDone == 1)
-				{
-					hsModem->stat.apStat.udpRx.numOfFreg += 1;
-				}
-			}
-		} 
-		else 
-		{
-			if(pLrSegAnalyze->fusionId == TERM_SERVICE_CORE_ADMIN)
-			{
-				hsModem->stat.apStat.adminRx.numOfBytes += pLrSegAnalyze->segLen;
-				hsModem->stat.apStat.adminRx.numOfFullSeg += 1;
-				// hsModem->stat.apStat.adminTx.numOfPartialSeg += 1;
-			} else if(pLrSegAnalyze->fusionId == TERM_SERVICE_USER_UDP)
-			{
-				hsModem->stat.apStat.udpRx.numOfBytes += pLrSegAnalyze->segLen;
-				hsModem->stat.apStat.udpRx.numOfFullSeg += 1;
-				// hsModem->stat.apStat.udpTx.numOfPartialSeg += 1;
-			}
-		}
-	}
+		return update_lr_service_counters_parser(	hsModem->ctx.satMsgRx, 
+												   &hsModem->stat.apStat.adminRx, 
+												   &hsModem->stat.apStat.udpRx, 
+												   &currFragRxServiceId		);
+	}	
 }

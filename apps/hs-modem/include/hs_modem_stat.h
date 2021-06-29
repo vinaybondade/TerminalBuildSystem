@@ -13,9 +13,8 @@
 typedef struct serviceStat_t
 {
 	uint32_t numOfBytes;
-	uint32_t numOfFullSeg;
-	uint32_t numOfPartialSeg;
-	uint32_t numOfFreg;
+	uint32_t numOfSeg;
+	uint32_t numOfFrag;
 } serviceStat_t;
 
 typedef enum
